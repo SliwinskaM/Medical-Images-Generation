@@ -483,6 +483,8 @@ def train_cyclegan(models,
         metrics = d_source.train_on_batch(x, valid_fake)
         print("11")
         del hdf5_tmp['x']
+        del hdf5_tmp['fake_target']
+        del hdf5_tmp['fake_source']
         log = "%s [d_source loss: %f]" % (log, metrics[0])
 
         # train the adversarial network using forward and backward
@@ -492,6 +494,8 @@ def train_cyclegan(models,
         x = [real_source, real_target]
         y = [valid, valid, real_source, real_target]
         metrics = adv.train_on_batch(x, y)
+        del hdf5_tmp['real_target']
+        del hdf5_tmp['real_source']
         print("12")
         elapsed_time = datetime.datetime.now() - start_time
         fmt = "%s [adv loss: %f] [time: %s]"
@@ -503,14 +507,9 @@ def train_cyclegan(models,
                            step=step+1,
                            titles=titles,
                            dirs=dirs,
-                           hdf5_tmp=hdf5_tmp,
+                           hdf5_input_filename=hdf5_input_filename,
                            show=False,
                            )
-        # clean the rest of variables
-        del hdf5_tmp['real_target']
-        del hdf5_tmp['real_source']
-        del hdf5_tmp['fake_target']
-        del hdf5_tmp['fake_source']
 
     # save the models after training the generators
     g_source.save(model_name + "-g_source.h5")
@@ -520,31 +519,27 @@ def train_cyclegan(models,
     del hdf5_tmp['valid']
     del hdf5_tmp['fake']
     hdf5_tmp.close()
-    # file should be reusable - delete commands below?
-    # del diskfile['source_data']
-    # del diskfile['target_data']
-    # del diskfile['test_source_data']
-    # del diskfile['test_target_data']
+    hdf5_input.close()
 
 
 
 
 
-def main(source_name, target_name, num_of_data=20, g_models=None):
-    """Build and train a CycleGAN that can do
-            T1 <--> STIR
+def main(source_name, target_name, num_of_data=850, g_models=None):
+    """Build and train a CycleGAN
         """
 
     model_name = 'cyclegan' + source_name + '_cross_' + target_name
-    batch_size = 5 # 32
+    batch_size = 2 # 32
     train_steps = 100000
-    patchgan = False # False
-    kernel_size = 3  # 5?
+    patchgan = True # False
+    kernel_size = 5 # 7?
     postfix = ('%dp' % kernel_size) \
         if patchgan else ('%d' % kernel_size)
 
     print("Batch size: ", batch_size)
     print("Kernel size: ", kernel_size)
+    print("Max number of data: ", num_of_data)
 
     shapes, hdf5_input_filename = other_utils_opt.load_data(source_name, target_name, num_of_data=num_of_data)
 
@@ -574,9 +569,9 @@ def main(source_name, target_name, num_of_data=20, g_models=None):
                             patchgan=patchgan)
 
     # get source data shape from h5py file
-    diskfile = h5py.File(hdf5_input_filename, "r")
-    source_shape_patchgan = diskfile['source_data'].shape[1]
-    diskfile.close()
+    hdf5_input = h5py.File(hdf5_input_filename, "r")
+    source_shape_patchgan = hdf5_input['source_data'].shape[1]
+    hdf5_input.close()
 
 
     # patch size is divided by 2^n since we downscaled the input

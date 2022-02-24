@@ -1,14 +1,9 @@
 /device:GPU:0
-Batch size:  5
-Kernel size:  3
-Loading data
-Liczba obrazów:  100
-Source loaded 86 14
-Liczba obrazów:  100
-Target loaded
-Creating hdf5 file
+Batch size:  2
+Kernel size:  5
+Max number of data:  850
 ---- TARGET GENERATOR ----
-Model: "gen_STIR-3p"
+Model: "gen_STIR-5p"
 __________________________________________________________________________________________________
  Layer (type)                   Output Shape         Param #     Connected to                     
 ==================================================================================================
@@ -20,7 +15,7 @@ ________________________________________________________________________________
                                                                                                   
  leaky_re_lu (LeakyReLU)        (None, 560, 560, 1)  0           ['instance_normalization[0][0]'] 
                                                                                                   
- conv2d (Conv2D)                (None, 560, 560, 32  320         ['leaky_re_lu[0][0]']            
+ conv2d (Conv2D)                (None, 560, 560, 32  832         ['leaky_re_lu[0][0]']            
                                 )                                                                 
                                                                                                   
  instance_normalization_1 (Inst  (None, 560, 560, 32  64         ['conv2d[0][0]']                 
@@ -29,7 +24,7 @@ ________________________________________________________________________________
  leaky_re_lu_1 (LeakyReLU)      (None, 560, 560, 32  0           ['instance_normalization_1[0][0]'
                                 )                                ]                                
                                                                                                   
- conv2d_1 (Conv2D)              (None, 280, 280, 64  18496       ['leaky_re_lu_1[0][0]']          
+ conv2d_1 (Conv2D)              (None, 280, 280, 64  51264       ['leaky_re_lu_1[0][0]']          
                                 )                                                                 
                                                                                                   
  instance_normalization_2 (Inst  (None, 280, 280, 64  128        ['conv2d_1[0][0]']               
@@ -38,7 +33,7 @@ ________________________________________________________________________________
  leaky_re_lu_2 (LeakyReLU)      (None, 280, 280, 64  0           ['instance_normalization_2[0][0]'
                                 )                                ]                                
                                                                                                   
- conv2d_2 (Conv2D)              (None, 140, 140, 12  73856       ['leaky_re_lu_2[0][0]']          
+ conv2d_2 (Conv2D)              (None, 140, 140, 12  204928      ['leaky_re_lu_2[0][0]']          
                                 8)                                                                
                                                                                                   
  instance_normalization_3 (Inst  (None, 140, 140, 12  256        ['conv2d_2[0][0]']               
@@ -47,7 +42,7 @@ ________________________________________________________________________________
  leaky_re_lu_3 (LeakyReLU)      (None, 140, 140, 12  0           ['instance_normalization_3[0][0]'
                                 8)                               ]                                
                                                                                                   
- conv2d_3 (Conv2D)              (None, 70, 70, 256)  295168      ['leaky_re_lu_3[0][0]']          
+ conv2d_3 (Conv2D)              (None, 70, 70, 256)  819456      ['leaky_re_lu_3[0][0]']          
                                                                                                   
  instance_normalization_4 (Inst  (None, 70, 70, 256)  512        ['conv2d_3[0][0]']               
  anceNormalization)                                                                               
@@ -55,7 +50,7 @@ ________________________________________________________________________________
  activation (Activation)        (None, 70, 70, 256)  0           ['instance_normalization_4[0][0]'
                                                                  ]                                
                                                                                                   
- conv2d_transpose (Conv2DTransp  (None, 140, 140, 12  295040     ['activation[0][0]']             
+ conv2d_transpose (Conv2DTransp  (None, 140, 140, 12  819328     ['activation[0][0]']             
  ose)                           8)                                                                
                                                                                                   
  concatenate (Concatenate)      (None, 140, 140, 25  0           ['conv2d_transpose[0][0]',       
@@ -67,7 +62,7 @@ ________________________________________________________________________________
  activation_1 (Activation)      (None, 140, 140, 25  0           ['instance_normalization_5[0][0]'
                                 6)                               ]                                
                                                                                                   
- conv2d_transpose_1 (Conv2DTran  (None, 280, 280, 64  147520     ['activation_1[0][0]']           
+ conv2d_transpose_1 (Conv2DTran  (None, 280, 280, 64  409664     ['activation_1[0][0]']           
  spose)                         )                                                                 
                                                                                                   
  concatenate_1 (Concatenate)    (None, 280, 280, 12  0           ['conv2d_transpose_1[0][0]',     
@@ -79,22 +74,22 @@ ________________________________________________________________________________
  activation_2 (Activation)      (None, 280, 280, 12  0           ['instance_normalization_6[0][0]'
                                 8)                               ]                                
                                                                                                   
- conv2d_transpose_2 (Conv2DTran  (None, 560, 560, 32  36896      ['activation_2[0][0]']           
+ conv2d_transpose_2 (Conv2DTran  (None, 560, 560, 32  102432     ['activation_2[0][0]']           
  spose)                         )                                                                 
                                                                                                   
  concatenate_2 (Concatenate)    (None, 560, 560, 64  0           ['conv2d_transpose_2[0][0]',     
                                 )                                 'conv2d[0][0]']                 
                                                                                                   
- conv2d_transpose_3 (Conv2DTran  (None, 560, 560, 1)  577        ['concatenate_2[0][0]']          
+ conv2d_transpose_3 (Conv2DTran  (None, 560, 560, 1)  1601       ['concatenate_2[0][0]']          
  spose)                                                                                           
                                                                                                   
 ==================================================================================================
-Total params: 869,603
-Trainable params: 869,603
+Total params: 2,411,235
+Trainable params: 2,411,235
 Non-trainable params: 0
 __________________________________________________________________________________________________
 ---- SOURCE GENERATOR ----
-Model: "gen_T1-3p"
+Model: "gen_T1-5p"
 __________________________________________________________________________________________________
  Layer (type)                   Output Shape         Param #     Connected to                     
 ==================================================================================================
@@ -107,7 +102,7 @@ ________________________________________________________________________________
  leaky_re_lu_4 (LeakyReLU)      (None, 560, 560, 1)  0           ['instance_normalization_7[0][0]'
                                                                  ]                                
                                                                                                   
- conv2d_4 (Conv2D)              (None, 560, 560, 32  320         ['leaky_re_lu_4[0][0]']          
+ conv2d_4 (Conv2D)              (None, 560, 560, 32  832         ['leaky_re_lu_4[0][0]']          
                                 )                                                                 
                                                                                                   
  instance_normalization_8 (Inst  (None, 560, 560, 32  64         ['conv2d_4[0][0]']               
@@ -116,7 +111,7 @@ ________________________________________________________________________________
  leaky_re_lu_5 (LeakyReLU)      (None, 560, 560, 32  0           ['instance_normalization_8[0][0]'
                                 )                                ]                                
                                                                                                   
- conv2d_5 (Conv2D)              (None, 280, 280, 64  18496       ['leaky_re_lu_5[0][0]']          
+ conv2d_5 (Conv2D)              (None, 280, 280, 64  51264       ['leaky_re_lu_5[0][0]']          
                                 )                                                                 
                                                                                                   
  instance_normalization_9 (Inst  (None, 280, 280, 64  128        ['conv2d_5[0][0]']               
@@ -125,7 +120,7 @@ ________________________________________________________________________________
  leaky_re_lu_6 (LeakyReLU)      (None, 280, 280, 64  0           ['instance_normalization_9[0][0]'
                                 )                                ]                                
                                                                                                   
- conv2d_6 (Conv2D)              (None, 140, 140, 12  73856       ['leaky_re_lu_6[0][0]']          
+ conv2d_6 (Conv2D)              (None, 140, 140, 12  204928      ['leaky_re_lu_6[0][0]']          
                                 8)                                                                
                                                                                                   
  instance_normalization_10 (Ins  (None, 140, 140, 12  256        ['conv2d_6[0][0]']               
@@ -134,7 +129,7 @@ ________________________________________________________________________________
  leaky_re_lu_7 (LeakyReLU)      (None, 140, 140, 12  0           ['instance_normalization_10[0][0]
                                 8)                               ']                               
                                                                                                   
- conv2d_7 (Conv2D)              (None, 70, 70, 256)  295168      ['leaky_re_lu_7[0][0]']          
+ conv2d_7 (Conv2D)              (None, 70, 70, 256)  819456      ['leaky_re_lu_7[0][0]']          
                                                                                                   
  instance_normalization_11 (Ins  (None, 70, 70, 256)  512        ['conv2d_7[0][0]']               
  tanceNormalization)                                                                              
@@ -142,7 +137,7 @@ ________________________________________________________________________________
  activation_3 (Activation)      (None, 70, 70, 256)  0           ['instance_normalization_11[0][0]
                                                                  ']                               
                                                                                                   
- conv2d_transpose_4 (Conv2DTran  (None, 140, 140, 12  295040     ['activation_3[0][0]']           
+ conv2d_transpose_4 (Conv2DTran  (None, 140, 140, 12  819328     ['activation_3[0][0]']           
  spose)                         8)                                                                
                                                                                                   
  concatenate_3 (Concatenate)    (None, 140, 140, 25  0           ['conv2d_transpose_4[0][0]',     
@@ -154,7 +149,7 @@ ________________________________________________________________________________
  activation_4 (Activation)      (None, 140, 140, 25  0           ['instance_normalization_12[0][0]
                                 6)                               ']                               
                                                                                                   
- conv2d_transpose_5 (Conv2DTran  (None, 280, 280, 64  147520     ['activation_4[0][0]']           
+ conv2d_transpose_5 (Conv2DTran  (None, 280, 280, 64  409664     ['activation_4[0][0]']           
  spose)                         )                                                                 
                                                                                                   
  concatenate_4 (Concatenate)    (None, 280, 280, 12  0           ['conv2d_transpose_5[0][0]',     
@@ -166,22 +161,22 @@ ________________________________________________________________________________
  activation_5 (Activation)      (None, 280, 280, 12  0           ['instance_normalization_13[0][0]
                                 8)                               ']                               
                                                                                                   
- conv2d_transpose_6 (Conv2DTran  (None, 560, 560, 32  36896      ['activation_5[0][0]']           
+ conv2d_transpose_6 (Conv2DTran  (None, 560, 560, 32  102432     ['activation_5[0][0]']           
  spose)                         )                                                                 
                                                                                                   
  concatenate_5 (Concatenate)    (None, 560, 560, 64  0           ['conv2d_transpose_6[0][0]',     
                                 )                                 'conv2d_4[0][0]']               
                                                                                                   
- conv2d_transpose_7 (Conv2DTran  (None, 560, 560, 1)  577        ['concatenate_5[0][0]']          
+ conv2d_transpose_7 (Conv2DTran  (None, 560, 560, 1)  1601       ['concatenate_5[0][0]']          
  spose)                                                                                           
                                                                                                   
 ==================================================================================================
-Total params: 869,603
-Trainable params: 869,603
+Total params: 2,411,235
+Trainable params: 2,411,235
 Non-trainable params: 0
 __________________________________________________________________________________________________
 ---- TARGET DISCRIMINATOR ----
-Model: "dis_STIR-3p"
+Model: "dis_STIR-5p"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
@@ -189,31 +184,31 @@ _________________________________________________________________
                                                                  
  leaky_re_lu_8 (LeakyReLU)   (None, 560, 560, 1)       0         
                                                                  
- conv2d_8 (Conv2D)           (None, 280, 280, 32)      320       
+ conv2d_8 (Conv2D)           (None, 280, 280, 32)      832       
                                                                  
  leaky_re_lu_9 (LeakyReLU)   (None, 280, 280, 32)      0         
                                                                  
- conv2d_9 (Conv2D)           (None, 140, 140, 64)      18496     
+ conv2d_9 (Conv2D)           (None, 140, 140, 64)      51264     
                                                                  
  leaky_re_lu_10 (LeakyReLU)  (None, 140, 140, 64)      0         
                                                                  
- conv2d_10 (Conv2D)          (None, 70, 70, 128)       73856     
+ conv2d_10 (Conv2D)          (None, 70, 70, 128)       204928    
                                                                  
  leaky_re_lu_11 (LeakyReLU)  (None, 70, 70, 128)       0         
                                                                  
- conv2d_11 (Conv2D)          (None, 70, 70, 256)       295168    
+ conv2d_11 (Conv2D)          (None, 70, 70, 256)       819456    
                                                                  
  leaky_re_lu_12 (LeakyReLU)  (None, 70, 70, 256)       0         
                                                                  
- conv2d_12 (Conv2D)          (None, 35, 35, 1)         2305      
+ conv2d_12 (Conv2D)          (None, 35, 35, 1)         6401      
                                                                  
 =================================================================
-Total params: 390,145
-Trainable params: 390,145
+Total params: 1,082,881
+Trainable params: 1,082,881
 Non-trainable params: 0
 _________________________________________________________________
 ---- SOURCE DISCRIMINATOR ----
-Model: "dis_T1-3p"
+Model: "dis_T1-5p"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
@@ -221,27 +216,27 @@ _________________________________________________________________
                                                                  
  leaky_re_lu_13 (LeakyReLU)  (None, 560, 560, 1)       0         
                                                                  
- conv2d_13 (Conv2D)          (None, 280, 280, 32)      320       
+ conv2d_13 (Conv2D)          (None, 280, 280, 32)      832       
                                                                  
  leaky_re_lu_14 (LeakyReLU)  (None, 280, 280, 32)      0         
                                                                  
- conv2d_14 (Conv2D)          (None, 140, 140, 64)      18496     
+ conv2d_14 (Conv2D)          (None, 140, 140, 64)      51264     
                                                                  
  leaky_re_lu_15 (LeakyReLU)  (None, 140, 140, 64)      0         
                                                                  
- conv2d_15 (Conv2D)          (None, 70, 70, 128)       73856     
+ conv2d_15 (Conv2D)          (None, 70, 70, 128)       204928    
                                                                  
  leaky_re_lu_16 (LeakyReLU)  (None, 70, 70, 128)       0         
                                                                  
- conv2d_16 (Conv2D)          (None, 70, 70, 256)       295168    
+ conv2d_16 (Conv2D)          (None, 70, 70, 256)       819456    
                                                                  
  leaky_re_lu_17 (LeakyReLU)  (None, 70, 70, 256)       0         
                                                                  
- conv2d_17 (Conv2D)          (None, 35, 35, 1)         2305      
+ conv2d_17 (Conv2D)          (None, 35, 35, 1)         6401      
                                                                  
 =================================================================
-Total params: 390,145
-Trainable params: 390,145
+Total params: 1,082,881
+Trainable params: 1,082,881
 Non-trainable params: 0
 _________________________________________________________________
 ---- ADVERSARIAL NETWORK ----
@@ -255,30 +250,1543 @@ ________________________________________________________________________________
  input_5 (InputLayer)           [(None, 560, 560, 1  0           []                               
                                 )]                                                                
                                                                                                   
- gen_T1-3p (Functional)         (None, 560, 560, 1)  869603      ['gen_STIR-3p[0][0]',            
+ gen_T1-5p (Functional)         (None, 560, 560, 1)  2411235     ['gen_STIR-5p[0][0]',            
                                                                   'input_6[0][0]']                
                                                                                                   
- gen_STIR-3p (Functional)       (None, 560, 560, 1)  869603      ['input_5[0][0]',                
-                                                                  'gen_T1-3p[1][0]']              
+ gen_STIR-5p (Functional)       (None, 560, 560, 1)  2411235     ['input_5[0][0]',                
+                                                                  'gen_T1-5p[1][0]']              
                                                                                                   
- dis_T1-3p (Functional)         (None, 35, 35, 1)    390145      ['gen_T1-3p[1][0]']              
+ dis_T1-5p (Functional)         (None, 35, 35, 1)    1082881     ['gen_T1-5p[1][0]']              
                                                                                                   
- dis_STIR-3p (Functional)       (None, 35, 35, 1)    390145      ['gen_STIR-3p[0][0]']            
+ dis_STIR-5p (Functional)       (None, 35, 35, 1)    1082881     ['gen_STIR-5p[0][0]']            
                                                                                                   
 ==================================================================================================
-Total params: 2,519,496
-Trainable params: 1,739,206
-Non-trainable params: 780,290
+Total params: 6,988,232
+Trainable params: 4,822,470
+Non-trainable params: 2,165,762
 __________________________________________________________________________________________________
 1
 2
 3
 4
 5
-5
+Koniec generatora
 6
 7
-7
 8
+Koniec generatora
 9
 10
+11
+12
+0: [d_target loss: 0.493819] [d_source loss: 0.464613] [adv loss: 20.993671] [time: 0:00:10.166182]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+1: [d_target loss: 0.741098] [d_source loss: 4.209051] [adv loss: 18.859726] [time: 0:00:10.701561]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+2: [d_target loss: 0.802599] [d_source loss: 0.788991] [adv loss: 20.197083] [time: 0:00:11.234008]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+3: [d_target loss: 0.444960] [d_source loss: 0.161942] [adv loss: 14.709799] [time: 0:00:11.765035]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+4: [d_target loss: 0.364197] [d_source loss: 0.272859] [adv loss: 17.601707] [time: 0:00:12.323628]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+5: [d_target loss: 0.362056] [d_source loss: 0.143928] [adv loss: 13.295753] [time: 0:00:12.939148]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+6: [d_target loss: 0.351465] [d_source loss: 0.208882] [adv loss: 15.803979] [time: 0:00:13.553899]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+7: [d_target loss: 0.318410] [d_source loss: 0.309538] [adv loss: 13.329740] [time: 0:00:14.155986]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+8: [d_target loss: 0.331323] [d_source loss: 0.213058] [adv loss: 14.410973] [time: 0:00:14.757869]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+9: [d_target loss: 0.352556] [d_source loss: 0.260432] [adv loss: 12.498705] [time: 0:00:15.372156]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+10: [d_target loss: 0.318972] [d_source loss: 0.221671] [adv loss: 14.477222] [time: 0:00:15.980728]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+11: [d_target loss: 0.337651] [d_source loss: 0.230169] [adv loss: 11.462910] [time: 0:00:16.593707]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+12: [d_target loss: 0.343979] [d_source loss: 0.252545] [adv loss: 15.984779] [time: 0:00:17.185036]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+13: [d_target loss: 0.276619] [d_source loss: 0.256874] [adv loss: 11.877687] [time: 0:00:17.807359]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+14: [d_target loss: 0.264836] [d_source loss: 0.346729] [adv loss: 11.877064] [time: 0:00:18.404159]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+15: [d_target loss: 0.260750] [d_source loss: 0.201715] [adv loss: 13.833010] [time: 0:00:19.003821]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+16: [d_target loss: 0.202241] [d_source loss: 0.172116] [adv loss: 14.294335] [time: 0:00:19.599208]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+17: [d_target loss: 0.224216] [d_source loss: 0.274831] [adv loss: 9.161953] [time: 0:00:20.247090]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+18: [d_target loss: 0.168467] [d_source loss: 0.182229] [adv loss: 18.924652] [time: 0:00:20.793289]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+19: [d_target loss: 0.184723] [d_source loss: 0.262715] [adv loss: 10.717379] [time: 0:00:21.396654]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+20: [d_target loss: 0.182076] [d_source loss: 0.174171] [adv loss: 15.047674] [time: 0:00:21.933786]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+21: [d_target loss: 0.137009] [d_source loss: 0.155296] [adv loss: 17.655788] [time: 0:00:22.518941]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+22: [d_target loss: 0.147847] [d_source loss: 0.148591] [adv loss: 15.788151] [time: 0:00:23.137036]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+23: [d_target loss: 0.173420] [d_source loss: 0.219553] [adv loss: 13.242674] [time: 0:00:23.673393]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+24: [d_target loss: 0.178635] [d_source loss: 0.193067] [adv loss: 13.698853] [time: 0:00:24.251898]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+25: [d_target loss: 0.175612] [d_source loss: 0.249956] [adv loss: 10.143784] [time: 0:00:24.830057]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+26: [d_target loss: 0.176694] [d_source loss: 0.322989] [adv loss: 9.993878] [time: 0:00:25.357153]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+27: [d_target loss: 0.158941] [d_source loss: 0.187270] [adv loss: 14.544260] [time: 0:00:25.889407]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+28: [d_target loss: 0.200725] [d_source loss: 0.243136] [adv loss: 8.222679] [time: 0:00:26.418224]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+29: [d_target loss: 0.158791] [d_source loss: 0.329000] [adv loss: 8.775991] [time: 0:00:26.952081]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+30: [d_target loss: 0.236848] [d_source loss: 0.209601] [adv loss: 12.303974] [time: 0:00:27.478952]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+31: [d_target loss: 0.208168] [d_source loss: 0.210306] [adv loss: 11.624831] [time: 0:00:28.004798]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+32: [d_target loss: 0.172193] [d_source loss: 0.102077] [adv loss: 16.627497] [time: 0:00:28.532239]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+33: [d_target loss: 0.179301] [d_source loss: 0.223923] [adv loss: 16.490852] [time: 0:00:29.059294]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+34: [d_target loss: 0.284041] [d_source loss: 0.154880] [adv loss: 12.194814] [time: 0:00:29.590386]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+35: [d_target loss: 0.218977] [d_source loss: 0.744442] [adv loss: 13.708055] [time: 0:00:30.121999]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+36: [d_target loss: 0.167669] [d_source loss: 0.683877] [adv loss: 17.209572] [time: 0:00:30.651694]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+37: [d_target loss: 0.208623] [d_source loss: 0.330580] [adv loss: 8.923029] [time: 0:00:31.179788]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+38: [d_target loss: 0.168652] [d_source loss: 0.135949] [adv loss: 22.416294] [time: 0:00:31.706344]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+39: [d_target loss: 0.166291] [d_source loss: 0.196291] [adv loss: 8.652829] [time: 0:00:32.238322]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+40: [d_target loss: 0.162559] [d_source loss: 0.241785] [adv loss: 21.696590] [time: 0:00:32.763522]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+41: [d_target loss: 0.210620] [d_source loss: 0.294560] [adv loss: 15.609149] [time: 0:00:33.295621]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+42: [d_target loss: 0.114602] [d_source loss: 0.254593] [adv loss: 10.614426] [time: 0:00:33.831879]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+43: [d_target loss: 0.164919] [d_source loss: 0.163036] [adv loss: 12.308169] [time: 0:00:34.367925]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+44: [d_target loss: 0.171212] [d_source loss: 0.236958] [adv loss: 12.572357] [time: 0:00:34.900222]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+45: [d_target loss: 0.146950] [d_source loss: 0.183783] [adv loss: 11.278111] [time: 0:00:35.429918]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+46: [d_target loss: 0.150732] [d_source loss: 0.304850] [adv loss: 7.431489] [time: 0:00:35.960164]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+47: [d_target loss: 0.106222] [d_source loss: 0.109022] [adv loss: 24.673204] [time: 0:00:36.492310]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+48: [d_target loss: 1.049265] [d_source loss: 0.257010] [adv loss: 15.068347] [time: 0:00:37.027465]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+49: [d_target loss: 0.372528] [d_source loss: 0.171996] [adv loss: 12.613926] [time: 0:00:37.561673]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+50: [d_target loss: 0.233119] [d_source loss: 0.171674] [adv loss: 13.426248] [time: 0:00:38.095394]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+51: [d_target loss: 0.194838] [d_source loss: 0.129229] [adv loss: 10.557435] [time: 0:00:38.628180]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+52: [d_target loss: 0.163941] [d_source loss: 0.114076] [adv loss: 14.405219] [time: 0:00:39.164124]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+53: [d_target loss: 0.117079] [d_source loss: 0.115548] [adv loss: 14.280415] [time: 0:00:39.695870]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+54: [d_target loss: 0.139286] [d_source loss: 0.134833] [adv loss: 11.780099] [time: 0:00:40.231769]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+55: [d_target loss: 0.127199] [d_source loss: 0.134874] [adv loss: 14.644428] [time: 0:00:40.770853]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+56: [d_target loss: 0.156723] [d_source loss: 0.122895] [adv loss: 15.297283] [time: 0:00:41.307930]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+57: [d_target loss: 0.120034] [d_source loss: 0.194192] [adv loss: 11.898428] [time: 0:00:41.842793]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+58: [d_target loss: 0.143879] [d_source loss: 0.219143] [adv loss: 15.157887] [time: 0:00:42.375542]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+59: [d_target loss: 0.168867] [d_source loss: 0.285747] [adv loss: 8.342025] [time: 0:00:42.911710]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+60: [d_target loss: 0.111788] [d_source loss: 0.160365] [adv loss: 14.833417] [time: 0:00:43.436689]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+61: [d_target loss: 0.141319] [d_source loss: 0.140372] [adv loss: 16.251175] [time: 0:00:43.967543]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+62: [d_target loss: 0.204920] [d_source loss: 0.077968] [adv loss: 15.378882] [time: 0:00:44.495259]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+63: [d_target loss: 0.213305] [d_source loss: 0.083608] [adv loss: 14.199258] [time: 0:00:45.024394]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+64: [d_target loss: 0.142318] [d_source loss: 0.068073] [adv loss: 18.492334] [time: 0:00:45.551292]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+65: [d_target loss: 0.125363] [d_source loss: 0.084760] [adv loss: 15.056524] [time: 0:00:46.083857]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+66: [d_target loss: 0.135970] [d_source loss: 0.077075] [adv loss: 12.629604] [time: 0:00:46.616432]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+67: [d_target loss: 0.104115] [d_source loss: 0.095446] [adv loss: 10.324359] [time: 0:00:47.141752]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+68: [d_target loss: 0.188140] [d_source loss: 0.150006] [adv loss: 11.083752] [time: 0:00:47.673206]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+69: [d_target loss: 0.230112] [d_source loss: 0.259135] [adv loss: 11.675541] [time: 0:00:48.201824]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+70: [d_target loss: 0.147832] [d_source loss: 0.127580] [adv loss: 14.742075] [time: 0:00:48.729028]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+71: [d_target loss: 0.187019] [d_source loss: 0.110898] [adv loss: 9.502422] [time: 0:00:49.256249]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+72: [d_target loss: 0.164684] [d_source loss: 0.120604] [adv loss: 9.602848] [time: 0:00:49.783508]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+73: [d_target loss: 0.098226] [d_source loss: 0.152860] [adv loss: 12.896790] [time: 0:00:50.316419]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+74: [d_target loss: 0.144564] [d_source loss: 0.118297] [adv loss: 10.029074] [time: 0:00:50.842363]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+75: [d_target loss: 0.203356] [d_source loss: 0.105492] [adv loss: 13.402601] [time: 0:00:51.377793]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+76: [d_target loss: 0.236627] [d_source loss: 0.143282] [adv loss: 13.132299] [time: 0:00:51.915960]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+77: [d_target loss: 0.139602] [d_source loss: 0.146761] [adv loss: 15.716457] [time: 0:00:52.448642]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+78: [d_target loss: 0.176376] [d_source loss: 0.240684] [adv loss: 10.721476] [time: 0:00:52.977942]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+79: [d_target loss: 0.181949] [d_source loss: 0.118530] [adv loss: 8.990832] [time: 0:00:53.511661]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+80: [d_target loss: 0.176138] [d_source loss: 0.096751] [adv loss: 7.948318] [time: 0:00:54.039161]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+81: [d_target loss: 0.133372] [d_source loss: 0.072667] [adv loss: 15.759585] [time: 0:00:54.573087]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+82: [d_target loss: 0.177316] [d_source loss: 0.075887] [adv loss: 7.658905] [time: 0:00:55.108866]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+83: [d_target loss: 0.190590] [d_source loss: 0.328771] [adv loss: 15.110518] [time: 0:00:55.642774]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+84: [d_target loss: 0.233169] [d_source loss: 0.376829] [adv loss: 11.224554] [time: 0:00:56.175310]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+85: [d_target loss: 0.147020] [d_source loss: 0.247434] [adv loss: 11.009431] [time: 0:00:56.704833]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+86: [d_target loss: 0.161580] [d_source loss: 0.152831] [adv loss: 15.206547] [time: 0:00:57.240654]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+87: [d_target loss: 0.135381] [d_source loss: 0.228203] [adv loss: 15.451721] [time: 0:00:57.777872]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+88: [d_target loss: 0.198310] [d_source loss: 0.141851] [adv loss: 12.534837] [time: 0:00:58.310136]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+89: [d_target loss: 0.130929] [d_source loss: 0.148036] [adv loss: 10.437565] [time: 0:00:58.848127]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+90: [d_target loss: 0.132543] [d_source loss: 0.157704] [adv loss: 10.847258] [time: 0:00:59.390515]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+91: [d_target loss: 0.158830] [d_source loss: 0.160570] [adv loss: 13.470577] [time: 0:00:59.922203]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+92: [d_target loss: 0.123838] [d_source loss: 0.257572] [adv loss: 9.917757] [time: 0:01:00.457693]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+93: [d_target loss: 0.167585] [d_source loss: 0.233345] [adv loss: 8.811945] [time: 0:01:00.986771]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+94: [d_target loss: 0.150120] [d_source loss: 0.107619] [adv loss: 14.082508] [time: 0:01:01.516651]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+95: [d_target loss: 0.110953] [d_source loss: 0.128293] [adv loss: 16.914305] [time: 0:01:02.049620]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+96: [d_target loss: 0.200245] [d_source loss: 0.266401] [adv loss: 12.807705] [time: 0:01:02.590012]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+97: [d_target loss: 0.137117] [d_source loss: 0.283452] [adv loss: 13.796583] [time: 0:01:03.181641]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+98: [d_target loss: 0.114165] [d_source loss: 0.155679] [adv loss: 12.151043] [time: 0:01:03.790350]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+99: [d_target loss: 0.211933] [d_source loss: 0.111259] [adv loss: 9.523736] [time: 0:01:04.336375]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+100: [d_target loss: 0.260265] [d_source loss: 0.106092] [adv loss: 11.676425] [time: 0:01:04.870763]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+101: [d_target loss: 0.201009] [d_source loss: 0.113866] [adv loss: 10.026539] [time: 0:01:05.436463]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+102: [d_target loss: 0.157525] [d_source loss: 0.085620] [adv loss: 12.836844] [time: 0:01:05.969213]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+103: [d_target loss: 0.147687] [d_source loss: 0.142522] [adv loss: 9.085154] [time: 0:01:06.655348]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+104: [d_target loss: 0.077833] [d_source loss: 0.143129] [adv loss: 13.280624] [time: 0:01:07.233414]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+105: [d_target loss: 0.124729] [d_source loss: 0.113302] [adv loss: 10.739591] [time: 0:01:07.765789]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+106: [d_target loss: 0.181708] [d_source loss: 0.091549] [adv loss: 14.020148] [time: 0:01:08.295731]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+107: [d_target loss: 0.206766] [d_source loss: 0.088431] [adv loss: 15.380974] [time: 0:01:08.888570]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+108: [d_target loss: 0.168016] [d_source loss: 0.105311] [adv loss: 14.273674] [time: 0:01:09.418378]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+109: [d_target loss: 0.166117] [d_source loss: 0.102449] [adv loss: 14.815897] [time: 0:01:09.947455]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+110: [d_target loss: 0.166709] [d_source loss: 0.163591] [adv loss: 8.934334] [time: 0:01:10.475549]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+111: [d_target loss: 0.154317] [d_source loss: 0.146137] [adv loss: 14.569495] [time: 0:01:11.003279]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+112: [d_target loss: 0.105154] [d_source loss: 0.259922] [adv loss: 17.228588] [time: 0:01:11.529669]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+113: [d_target loss: 0.162931] [d_source loss: 0.126934] [adv loss: 13.093524] [time: 0:01:12.057600]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+114: [d_target loss: 0.134390] [d_source loss: 0.106343] [adv loss: 13.740726] [time: 0:01:12.584042]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+115: [d_target loss: 0.145981] [d_source loss: 0.119819] [adv loss: 12.512551] [time: 0:01:13.112248]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+116: [d_target loss: 0.167992] [d_source loss: 0.129453] [adv loss: 12.211040] [time: 0:01:13.638758]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+117: [d_target loss: 0.178230] [d_source loss: 0.157444] [adv loss: 11.317562] [time: 0:01:14.166551]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+118: [d_target loss: 0.203926] [d_source loss: 0.120805] [adv loss: 15.878144] [time: 0:01:14.691504]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+119: [d_target loss: 0.209048] [d_source loss: 0.210268] [adv loss: 11.462965] [time: 0:01:15.219703]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+120: [d_target loss: 0.218837] [d_source loss: 0.130137] [adv loss: 12.301823] [time: 0:01:15.751046]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+121: [d_target loss: 0.183225] [d_source loss: 0.204903] [adv loss: 7.978604] [time: 0:01:16.290642]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+122: [d_target loss: 0.177887] [d_source loss: 0.116291] [adv loss: 13.383672] [time: 0:01:16.833969]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+123: [d_target loss: 0.272679] [d_source loss: 0.221079] [adv loss: 7.768631] [time: 0:01:17.396124]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+124: [d_target loss: 0.208251] [d_source loss: 0.148423] [adv loss: 14.947816] [time: 0:01:17.922268]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11
+12
+125: [d_target loss: 0.120151] [d_source loss: 0.282463] [adv loss: 5.769138] [time: 0:01:18.451730]
+4
+5
+Koniec generatora
+6
+7
+8
+Koniec generatora
+9
+10
+11

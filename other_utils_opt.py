@@ -80,7 +80,7 @@ def test_generator(generators,
                    step,
                    titles,
                    dirs,
-                    hdf5_input_filename,
+                   hdf5_input_filename,
                    todisplay=100,
                    show=False):
     """Test the generator models
@@ -99,8 +99,11 @@ def test_generator(generators,
     """
 
     # open hdf5 file
-    hdf5_tmp = h5py.File(hdf5_input_filename, "r+") # Read/write, file must exist
-    test_source_data, test_target_data = hdf5_tmp['test_source_data'], hdf5_tmp['test_target_data']
+    # hdf5_input = h5py.File(hdf5_input_filename, "r")
+    # test_source_data, test_target_data = hdf5_input['test_source_data'], hdf5_input['test_target_data']
+    batch_size_gen = 1
+    test_source_data_gen = HDF5DatasetGenerator(hdf5_input_filename, 'test_source_data', batch_size_gen)
+    test_target_data_gen = HDF5DatasetGenerator(hdf5_input_filename, 'test_target_data', batch_size_gen)
 
 
     # predict the output from test data
@@ -111,11 +114,22 @@ def test_generator(generators,
     title_reco_source = t3
     title_reco_target = t4
     dir_pred_source, dir_pred_target = dirs
+    print("a")
 
-    pred_target_data = hdf5_tmp.create_dataset("pred_target_data", data=g_target.predict(test_source_data))
-    pred_source_data = hdf5_tmp.create_dataset("pred_source_data", data=g_source.predict(test_target_data))
-    reco_source_data = hdf5_tmp.create_dataset("reco_source_data", data=g_source.predict(pred_target_data))
-    reco_target_data = hdf5_tmp.create_dataset("reco_target_data", data=g_target.predict(pred_source_data))
+    hdf5_tmp = h5py.File("tmp.hdf5", "r+") # Read/write, file must exist
+    pred_target_data = hdf5_tmp.create_dataset("pred_target_data", data=g_target.predict(test_source_data_gen.generator(passes=1)))
+    pred_target_data_gen = HDF5DatasetGenerator("tmp.hdf5", "pred_target_data", batch_size_gen)
+    print("aa")
+    pred_source_data = hdf5_tmp.create_dataset("pred_source_data", data=g_source.predict(test_target_data_gen.generator(passes=1)))
+    pred_source_data_gen = HDF5DatasetGenerator("tmp.hdf5", "pred_source_data", batch_size_gen)
+    print("ab")
+    # jakoś zmergować pred_*_data i pred_*_data_gen, jeśli dalej nie pójdzie
+
+    reco_source_data = hdf5_tmp.create_dataset("reco_source_data", data=g_source.predict(pred_target_data_gen.generator(passes=1)))
+    print("ac")
+    reco_target_data = hdf5_tmp.create_dataset("reco_target_data", data=g_target.predict(pred_source_data_gen.generator(passes=1)))
+    print("b")
+
 
     # display the 1st todisplay images
     imgs = hdf5_tmp.create_dataset('imgs', data=pred_target_data[:todisplay])
@@ -128,6 +142,7 @@ def test_generator(generators,
                    title=title,
                    show=show)
     del hdf5_tmp['imgs']
+    print("c")
 
     imgs = hdf5_tmp.create_dataset('imgs', data=pred_source_data[:todisplay])
     title = title_pred_source
@@ -137,6 +152,7 @@ def test_generator(generators,
                    title=title,
                    show=show)
     del hdf5_tmp['imgs']
+    print("d")
 
     imgs = hdf5_tmp.create_dataset('imgs', data=reco_source_data[:todisplay])
     title = title_reco_source
@@ -147,6 +163,7 @@ def test_generator(generators,
                    title=title,
                    show=show)
     del hdf5_tmp['imgs']
+    print("e")
 
     imgs = hdf5_tmp.create_dataset('imgs', data=reco_target_data[:todisplay])
     title = title_reco_target
@@ -161,6 +178,8 @@ def test_generator(generators,
     del hdf5_tmp['pred_source_data']
     del hdf5_tmp['reco_source_data']
     del hdf5_tmp['reco_target_data']
+    print("f")
+    # hdf5_tmp.close()
 
 
 def create_hdf5_file(data, titles, filenames, hdf5_input_filename, todisplay=100):
@@ -355,7 +374,7 @@ class HDF5DatasetGenerator:
 
             # increment the total number of epochs
             epochs += 1
-            print("Koniec epoki ", epochs)
+            # print("Koniec epoki ", epochs)
         print("Koniec generatora")
 
         # def close(self):

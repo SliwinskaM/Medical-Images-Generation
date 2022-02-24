@@ -17,12 +17,12 @@ import cyclegan_main_opt_backup
 import other_utils_opt
 
 
-# CT_MR_utils_opt.create_hdf5_file_adata('CT', 'MR_T1DUAL_InPhase', num_of_data=100)
-# cyclegan_main_opt.main('CT', 'MR_T1DUAL_InPhase', num_of_data=100)
+# CT_MR_utils_opt.create_hdf5_file_adata('CT', 'MR_T1DUAL_InPhase', num_of_data=850)
+# cyclegan_main_opt.main('CT', 'MR_T1DUAL_InPhase', num_of_data=850)
 
 
-T1_STIR_utils_opt.create_hdf5_file_adata('T1', 'STIR', num_of_data=70)
-cyclegan_main_opt.main('T1', 'STIR', num_of_data=70)
+T1_STIR_utils_opt.create_hdf5_file_adata('T1', 'STIR', num_of_data=850)
+# cyclegan_main_opt.main('T1', 'STIR') #, num_of_data=35)
 
 # cyclegan_main.ct_cross_mr('CT', 'MR_T1DUAL_InPhase')
 
@@ -86,6 +86,35 @@ cyclegan_main_opt.main('T1', 'STIR', num_of_data=70)
 # # for i in range(len(proba3)):
 # #     print(proba3[i])
 # pass
+
+
+
+
+# # count STIR data
+# counter = 0
+# files = sorted(glob.glob('/media/gosia/ADATA UFD/Data_T1_STIR/bone-marrow-oedema-data/STIR/' + '*.raw'))  # get all the .raw files from folder
+# for file in files:
+#     params = file.split('_')
+#     # add all layers as image:
+#     data = T1_STIR_utils_opt.readBinaryData(file, int(params[-4]), int(params[-3]), int(params[-2]))
+#     for layer in range(int(params[-3])):
+#         counter += 1
+# print('Liczba obrazów STIR:', counter)
+#
+#
+# # count T1 data
+# counter = 0
+# files = sorted(glob.glob('/media/gosia/ADATA UFD/Data_T1_STIR/bone-marrow-oedema-data/T1/' + '*.raw'))  # get all the .raw files from folder
+# for file in files:
+#     params = file.split('_')
+#     # add all layers as image:
+#     data = T1_STIR_utils_opt.readBinaryData(file, int(params[-4]), int(params[-3]), int(params[-2]))
+#     for layer in range(int(params[-3])):
+#         counter += 1
+# print('Liczba obrazów T1:', counter)
+
+
+
 
 
 # cifar10 format
