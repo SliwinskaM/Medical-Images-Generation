@@ -62,6 +62,7 @@ import numpy as np
 import argparse
 import datetime
 import h5py
+import gc
 
 import CT_MR_utils_opt
 import T1_STIR_utils_opt
@@ -383,7 +384,8 @@ def train_cyclegan(models,
                    params,
                    test_params,
                    test_generator,
-                   hdf5_input_filename):
+                   hdf5_input_filename,
+                   hdf5_tmp_filename='tmp.hdf5'):
     """ Trains the CycleGAN.
 
     1) Train the target discriminator
@@ -405,7 +407,7 @@ def train_cyclegan(models,
 
     # open hdf5 files
     hdf5_input = h5py.File(hdf5_input_filename, "r") # read, file must exist
-    hdf5_tmp = h5py.File('tmp.hdf5', "w") # Create file, truncate if exists
+    hdf5_tmp = h5py.File(hdf5_tmp_filename, "w") # Create file, truncate if exists
 
 
     # the models
@@ -456,7 +458,7 @@ def train_cyclegan(models,
         real_source = hdf5_tmp.create_dataset('real_source', data=source_data[rand_indexes])
         print("5")
         # generate a batch of fake target data fr real source data
-        real_source_gen = other_utils_opt.HDF5DatasetGenerator('tmp.hdf5', 'real_source', batch_size_gen)
+        real_source_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_tmp_filename, 'real_source', batch_size_gen)
         fake_target = hdf5_tmp.create_dataset('fake_target', data=g_target.predict(real_source_gen.generator(passes=1)))   #(real_source_gen.generator()))  #(real_source))
         print("6")
 
@@ -472,7 +474,7 @@ def train_cyclegan(models,
         log = "%d: [d_target loss: %f]" % (step, metrics[0])
 
         # generate a batch of fake source data fr real target data
-        real_target_gen = other_utils_opt.HDF5DatasetGenerator('tmp.hdf5', 'real_target', batch_size_gen)
+        real_target_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_tmp_filename, 'real_target', batch_size_gen)
         fake_source = hdf5_tmp.create_dataset('fake_source', data=g_source.predict(real_target_gen.generator(passes=1)))
         print("9")
         x = hdf5_tmp.create_dataset('x', data= np.concatenate((real_source, fake_source)))
@@ -508,8 +510,28 @@ def train_cyclegan(models,
                            titles=titles,
                            dirs=dirs,
                            hdf5_input_filename=hdf5_input_filename,
+                           hdf5_tmp_filename=hdf5_tmp_filename,
                            show=False,
                            )
+
+        # # clear cache
+        # del rng
+        # del rand_indexes
+        # del real_target
+        # del real_source
+        # del real_source_gen
+        # del fake_target
+        # del x
+        # del metrics
+        # del log
+        # del real_target_gen
+        # del fake_source
+        # del y
+        # del elapsed_time
+        # del fmt
+        # gc.collect()
+
+
 
     # save the models after training the generators
     g_source.save(model_name + "-g_source.h5")
@@ -525,7 +547,7 @@ def train_cyclegan(models,
 
 
 
-def main(source_name, target_name, num_of_data=850, g_models=None):
+def main(source_name, target_name, num_of_data=850, hdf5_tmp_filename='tmp.hdf5', g_models=None):
     """Build and train a CycleGAN
         """
 
@@ -558,6 +580,7 @@ def main(source_name, target_name, num_of_data=850, g_models=None):
                                    titles=titles,
                                    dirs=dirs,
                                    hdf5_input_filename=hdf5_input_filename,
+                                    hdf5_tmp_filename=hdf5_tmp_filename,
                                    show=True)
         return
 
@@ -585,7 +608,8 @@ def main(source_name, target_name, num_of_data=850, g_models=None):
                    params,
                    test_params,
                    other_utils_opt.test_generator,
-                   hdf5_input_filename)
+                   hdf5_input_filename,
+                   hdf5_tmp_filename=hdf5_tmp_filename)
 
 
 if __name__ == '__main__':

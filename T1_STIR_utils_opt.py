@@ -147,3 +147,7 @@ def create_hdf5_file(source_name, target_name, num_of_data, prefix_pendrive=None
 """Can't run in docker!"""
 def create_hdf5_file_adata(source_name, target_name, num_of_data=100):
     create_hdf5_file(source_name, target_name, num_of_data=num_of_data, prefix_pendrive='/media/gosia/ADATA UFD/')
+
+"""Can't run in docker!"""
+def create_hdf5_file_red(source_name, target_name, num_of_data=100):
+    create_hdf5_file(source_name, target_name, num_of_data=num_of_data, prefix_pendrive='/media/gosia/DYSK USB/GOSIA/')

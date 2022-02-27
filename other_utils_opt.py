@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import os
 import math
 import h5py
+import gc
 from keras.utils import np_utils
 
 def rgb2gray(rgb):
@@ -74,6 +75,11 @@ def display_images(imgs,
 
     plt.close('all')
 
+    # # clear cache
+    # del imgs
+    # gc.collect()
+
+
 
 def test_generator(generators,
                  #test_data,
@@ -81,6 +87,7 @@ def test_generator(generators,
                    titles,
                    dirs,
                    hdf5_input_filename,
+                    hdf5_tmp_filename='tmp.hdf5',
                    todisplay=100,
                    show=False):
     """Test the generator models
@@ -108,20 +115,16 @@ def test_generator(generators,
 
     # predict the output from test data
     g_source, g_target = generators
-    t1, t2, t3, t4 = titles
-    title_pred_source = t1
-    title_pred_target = t2
-    title_reco_source = t3
-    title_reco_target = t4
+    title_pred_source, title_pred_target, title_reco_source, title_reco_target = titles
     dir_pred_source, dir_pred_target = dirs
     print("a")
 
-    hdf5_tmp = h5py.File("tmp.hdf5", "r+") # Read/write, file must exist
+    hdf5_tmp = h5py.File(hdf5_tmp_filename, "r+") # Read/write, file must exist
     pred_target_data = hdf5_tmp.create_dataset("pred_target_data", data=g_target.predict(test_source_data_gen.generator(passes=1)))
-    pred_target_data_gen = HDF5DatasetGenerator("tmp.hdf5", "pred_target_data", batch_size_gen)
+    pred_target_data_gen = HDF5DatasetGenerator(hdf5_tmp_filename, "pred_target_data", batch_size_gen)
     print("aa")
     pred_source_data = hdf5_tmp.create_dataset("pred_source_data", data=g_source.predict(test_target_data_gen.generator(passes=1)))
-    pred_source_data_gen = HDF5DatasetGenerator("tmp.hdf5", "pred_source_data", batch_size_gen)
+    pred_source_data_gen = HDF5DatasetGenerator(hdf5_tmp_filename, "pred_source_data", batch_size_gen)
     print("ab")
     # jakoś zmergować pred_*_data i pred_*_data_gen, jeśli dalej nie pójdzie
 
@@ -180,6 +183,29 @@ def test_generator(generators,
     del hdf5_tmp['reco_target_data']
     print("f")
     # hdf5_tmp.close()
+
+    # # cleear cache
+    # del test_source_data_gen
+    # del test_target_data_gen
+    # del g_source
+    # del g_target
+    # del title_pred_source
+    # del title_pred_target
+    # del title_reco_source
+    # del title_reco_target
+    # del dir_pred_source
+    # del dir_pred_target
+    # del hdf5_tmp
+    # del pred_target_data
+    # del pred_target_data_gen
+    # del pred_source_data
+    # del pred_source_data_gen
+    # del reco_source_data
+    # del reco_target_data
+    # del imgs
+    # gc.collect()
+
+
 
 
 def create_hdf5_file(data, titles, filenames, hdf5_input_filename, todisplay=100):
@@ -374,6 +400,9 @@ class HDF5DatasetGenerator:
 
             # increment the total number of epochs
             epochs += 1
+            # # clear cache
+            # del images
+            # gc.collect()
             # print("Koniec epoki ", epochs)
         print("Koniec generatora")
 

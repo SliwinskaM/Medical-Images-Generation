@@ -17,12 +17,12 @@ import cyclegan_main_opt_backup
 import other_utils_opt
 
 
-# CT_MR_utils_opt.create_hdf5_file_adata('CT', 'MR_T1DUAL_InPhase', num_of_data=850)
-# cyclegan_main_opt.main('CT', 'MR_T1DUAL_InPhase', num_of_data=850)
+# CT_MR_utils_opt.create_hdf5_file_adata('CT', 'MR_T1DUAL_InPhase')
+# cyclegan_main_opt.main('CT', 'MR_T1DUAL_InPhase')
 
 
-T1_STIR_utils_opt.create_hdf5_file_adata('T1', 'STIR', num_of_data=850)
-# cyclegan_main_opt.main('T1', 'STIR') #, num_of_data=35)
+# T1_STIR_utils_opt.create_hdf5_file_red('T1', 'STIR', num_of_data=35)
+cyclegan_main_opt.main('T1', 'STIR', num_of_data=850)
 
 # cyclegan_main.ct_cross_mr('CT', 'MR_T1DUAL_InPhase')
 
