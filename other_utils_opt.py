@@ -7,6 +7,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -183,6 +185,21 @@ def test_generator(generators,
     del hdf5_tmp['reco_target_data']
     print("f")
     # hdf5_tmp.close()
+
+    # # monitor cache
+    # print('test_source_data_gen: ', sys.getsizeof(test_source_data_gen))
+    # print('test_target_data_gen: ', sys.getsizeof(test_target_data_gen))
+    # print('g_source: ', sys.getsizeof(g_source))
+    # print('g_target: ', sys.getsizeof(g_target))
+    # print('hdf5_tmp: ', sys.getsizeof(hdf5_tmp))
+    # print('pred_target_data: ', sys.getsizeof(pred_target_data))
+    # print('pred_target_data_gen: ', sys.getsizeof(pred_target_data_gen))
+    # print('pred_source_data: ', sys.getsizeof(pred_source_data))
+    # print('pred_source_data_gen: ', sys.getsizeof(pred_source_data_gen))
+    # print('reco_source_data: ', sys.getsizeof(reco_source_data))
+    # print('reco_target_data: ', sys.getsizeof(reco_target_data))
+    # print('imgs: ', sys.getsizeof(imgs))
+
 
     # # cleear cache
     # del test_source_data_gen
@@ -404,7 +421,7 @@ class HDF5DatasetGenerator:
             # del images
             # gc.collect()
             # print("Koniec epoki ", epochs)
-        print("Koniec generatora")
+        # print("Koniec generatora")
 
         # def close(self):
         #     # close the database

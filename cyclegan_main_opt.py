@@ -417,7 +417,7 @@ def train_cyclegan(models,
     # train dataset
     source_data, target_data, test_source_data, test_target_data = hdf5_input['source_data'], hdf5_input['target_data'], \
                                                                    hdf5_input['test_source_data'], hdf5_input['test_target_data']
-    print("1")
+    # print("1")
     titles, dirs = test_params
 
 
@@ -434,10 +434,10 @@ def train_cyclegan(models,
     else:
         valid = hdf5_tmp.create_dataset('valid', data=np.ones([batch_size, 1]))
         fake = hdf5_tmp.create_dataset('fake', data=np.zeros([batch_size, 1]))
-    print("2")
+    # print("2")
     valid_fake = hdf5_tmp.create_dataset('valid_fake', data=np.concatenate((valid, fake)))
     # valid_fake_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_filename, 'valid_fake', batch_size_gen)
-    print("3")
+    # print("3")
     start_time = datetime.datetime.now()
 
 
@@ -448,7 +448,7 @@ def train_cyclegan(models,
         rand_indexes = np.sort(rand_indexes)
         # add real source samples to hdf5 file
         real_target = hdf5_tmp.create_dataset('real_target', data=target_data[rand_indexes])
-        print("4")
+        # print("4")
 
         # sample a batch of real source data
         rng = np.random.default_rng()
@@ -456,34 +456,34 @@ def train_cyclegan(models,
         rand_indexes = np.sort(rand_indexes)
         # add real source samples to hdf5 file
         real_source = hdf5_tmp.create_dataset('real_source', data=source_data[rand_indexes])
-        print("5")
+        # print("5")
         # generate a batch of fake target data fr real source data
         real_source_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_tmp_filename, 'real_source', batch_size_gen)
         fake_target = hdf5_tmp.create_dataset('fake_target', data=g_target.predict(real_source_gen.generator(passes=1)))   #(real_source_gen.generator()))  #(real_source))
-        print("6")
+        # print("6")
 
         # combine real and fake into one batch
         x = hdf5_tmp.create_dataset('x', data=np.concatenate((real_target, fake_target)))
         # x_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_filename, 'x', batch_size_gen)
-        print("7")
+        # print("7")
         # train the target discriminator using fake/real data
         # cannot use generators here
         metrics = d_target.train_on_batch(x, valid_fake)
-        print("8")
+        # print("8")
         del hdf5_tmp['x']
         log = "%d: [d_target loss: %f]" % (step, metrics[0])
 
         # generate a batch of fake source data fr real target data
         real_target_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_tmp_filename, 'real_target', batch_size_gen)
         fake_source = hdf5_tmp.create_dataset('fake_source', data=g_source.predict(real_target_gen.generator(passes=1)))
-        print("9")
+        # print("9")
         x = hdf5_tmp.create_dataset('x', data= np.concatenate((real_source, fake_source)))
         # x_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_filename, 'x', batch_size_gen)
-        print("10")
+        # print("10")
         # train the source discriminator using fake/real data
         # cannot use generators here
         metrics = d_source.train_on_batch(x, valid_fake)
-        print("11")
+        # print("11")
         del hdf5_tmp['x']
         del hdf5_tmp['fake_target']
         del hdf5_tmp['fake_source']
@@ -498,7 +498,7 @@ def train_cyclegan(models,
         metrics = adv.train_on_batch(x, y)
         del hdf5_tmp['real_target']
         del hdf5_tmp['real_source']
-        print("12")
+        # print("12")
         elapsed_time = datetime.datetime.now() - start_time
         fmt = "%s [adv loss: %f] [time: %s]"
         log = fmt % (log, metrics[0], elapsed_time)
@@ -513,6 +513,16 @@ def train_cyclegan(models,
                            hdf5_tmp_filename=hdf5_tmp_filename,
                            show=False,
                            )
+
+        # # monitor cache
+        # print('real target: ', sys.getsizeof(real_target))
+        # print('real source: ', sys.getsizeof(real_source))
+        # print('real source gen: ', sys.getsizeof(real_source_gen))
+        # print('fake target: ', sys.getsizeof(fake_target))
+        # print('x: ', sys.getsizeof(x))
+        # print('real_target_gen: ', sys.getsizeof(real_target_gen))
+        # print('fake_source: ', sys.getsizeof(fake_source))
+        # print('y: ', sys.getsizeof(y))
 
         # # clear cache
         # del rng
