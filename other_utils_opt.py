@@ -29,7 +29,8 @@ def display_images(imgs,
                    filename,
                    title='',
                    imgs_dir=None,
-                   show=False):
+                   show=False,
+                   random=False):
     """Display images in an nxn grid
 
     Arguments:
@@ -44,9 +45,15 @@ def display_images(imgs,
     rows = imgs.shape[1]
     cols = imgs.shape[2]
     channels = imgs.shape[3]
-    side = int(math.sqrt(imgs.shape[0]))
-    # dopisane przeze mnie, żeby dane były zawsze "kwadratowe"
-    imgs = imgs[:side * side]
+    # dopisane przeze mnie, żeby dane były zawsze "kwadratowe" i wyraźne
+    side = min(int(math.sqrt(imgs.shape[0])), 5)
+    if random:
+        rng = np.random.default_rng()
+        rand_indexes = rng.choice(imgs.shape[0], size=side*side, replace=False)
+        rand_indexes = np.sort(rand_indexes)
+        imgs = imgs[rand_indexes]
+    else:
+        imgs = imgs[:side * side]
 
     assert int(side * side) == imgs.shape[0]
 
@@ -71,7 +78,7 @@ def display_images(imgs,
         plt.imshow(imgs, interpolation='none', cmap='gray')
     else:
         plt.imshow(imgs, interpolation='none')
-    plt.savefig(filename)
+    plt.savefig(filename, dpi=1200)
     if show:
         plt.show()
 
@@ -80,6 +87,7 @@ def display_images(imgs,
     # # clear cache
     # del imgs
     # gc.collect()
+
 
 
 
@@ -121,7 +129,7 @@ def test_generator(generators,
     dir_pred_source, dir_pred_target = dirs
     print("a")
 
-    hdf5_tmp = h5py.File(hdf5_tmp_filename, "r+") # Read/write, file must exist
+    hdf5_tmp = h5py.File(hdf5_tmp_filename, "a") # Read/write if exists, create otherwise
     pred_target_data = hdf5_tmp.create_dataset("pred_target_data", data=g_target.predict(test_source_data_gen.generator(passes=1)))
     pred_target_data_gen = HDF5DatasetGenerator(hdf5_tmp_filename, "pred_target_data", batch_size_gen)
     print("aa")
@@ -145,7 +153,8 @@ def test_generator(generators,
                    filename=filename,
                    imgs_dir=dir_pred_target,
                    title=title,
-                   show=show)
+                   show=show,
+                   random=True)
     del hdf5_tmp['imgs']
     print("c")
 
@@ -155,7 +164,8 @@ def test_generator(generators,
                    filename=filename,
                    imgs_dir=dir_pred_source,
                    title=title,
-                   show=show)
+                   show=show,
+                   random=True)
     del hdf5_tmp['imgs']
     print("d")
 
@@ -166,7 +176,8 @@ def test_generator(generators,
                    filename=filename,
                    imgs_dir=dir_pred_source,
                    title=title,
-                   show=show)
+                   show=show,
+                   random=True)
     del hdf5_tmp['imgs']
     print("e")
 
@@ -177,7 +188,8 @@ def test_generator(generators,
                    filename=filename,
                    imgs_dir=dir_pred_target,
                    title=title,
-                   show=show)
+                   show=show,
+                   random=True)
     del hdf5_tmp['imgs']
     del hdf5_tmp['pred_target_data']
     del hdf5_tmp['pred_source_data']

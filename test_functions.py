@@ -7,6 +7,7 @@ import glob
 import h5py
 import tensorflow_io as tfio
 import tensorflow as tf
+from tensorflow.keras.models import load_model
 
 import CT_MR_utils_opt
 import T1_STIR_utils
@@ -22,10 +23,13 @@ import other_utils_opt
 
 
 # T1_STIR_utils_opt.create_hdf5_file_red('T1', 'STIR', num_of_data=35)
-cyclegan_main_opt.main('T1', 'STIR', num_of_data=850)
+# cyclegan_main_opt.main('T1', 'STIR', num_of_data=850)
 
 # cyclegan_main.ct_cross_mr('CT', 'MR_T1DUAL_InPhase')
 
+g_source = load_model('cycleganT1_cross_STIR-g_source.h5')
+g_target = load_model('cycleganT1_cross_STIR-g_target.h5')
+cyclegan_main_opt.check_generator('T1', 'STIR', 'input_T1_STIR_850.hdf5', g_models=(g_source, g_target))
 
 
 # # test krzysztofrzecki code

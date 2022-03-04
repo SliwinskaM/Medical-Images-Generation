@@ -622,6 +622,28 @@ def main(source_name, target_name, num_of_data=850, hdf5_tmp_filename='tmp.hdf5'
                    hdf5_tmp_filename=hdf5_tmp_filename)
 
 
+
+def check_generator(source_name, target_name, hdf5_input_filename, hdf5_tmp_filename='tmp.hdf5', g_models=None):
+    titles = (source_name + ' predicted source images.',
+              target_name + ' predicted target images.',
+              source_name + ' reconstructed source images.',
+              target_name + ' reconstructed target images.')
+    dirs = (source_name + '_source-check',
+            target_name + '_target-check')
+    # with provided model generate predicted target and source images
+    if g_models is not None:
+        g_source, g_target = g_models
+        other_utils_opt.test_generator((g_source, g_target),
+                                   step=0,
+                                   titles=titles,
+                                   dirs=dirs,
+                                   hdf5_input_filename=hdf5_input_filename,
+                                    hdf5_tmp_filename=hdf5_tmp_filename,
+                                    todisplay=800,
+                                   show=True)
+        return
+
+
 if __name__ == '__main__':
     # ROBIĘ TO INACZEJ NIŻ ONI!!!!!
     parser = argparse.ArgumentParser()
