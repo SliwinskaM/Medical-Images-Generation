@@ -65,7 +65,7 @@ import h5py
 import gc
 
 import CT_MR_utils_opt
-import T1_STIR_utils_opt
+# import T1_STIR_utils_opt
 import other_utils_opt
 
 
@@ -77,7 +77,6 @@ def encoder_layer(inputs,
                   instance_norm=True):
     """Builds a generic encoder layer made of Conv2D-IN-LeakyReLU
     IN is optional, LeakyReLU may be replaced by ReLU
-
     """
 
     conv = Conv2D(filters=filters,
@@ -110,7 +109,6 @@ def decoder_layer(inputs,
     paired_inputs (tensor): the encoder layer output
           provided by U-Net skip connection &
           concatenated to inputs.
-
     """
 
     conv = Conv2DTranspose(filters=filters,
@@ -167,16 +165,35 @@ def build_generator(input_shape,
                        256,
                        activation='leaky_relu',
                        kernel_size=kernel_size)
+    e5 = encoder_layer(e4,
+                       256,
+                       activation='leaky_relu',
+                       kernel_size=kernel_size,
 
-    d1 = decoder_layer(e4,
+                       strides=1)
+    e6 = encoder_layer(e5,
+                       512,
+                       activation='leaky_relu',
+                       kernel_size=kernel_size)
+
+    d1 = decoder_layer(e6,
+                       e5,
+                       256,
+                       kernel_size=kernel_size)
+    d2 = decoder_layer(d1,
+                       e4,
+                       256,
+                       kernel_size=kernel_size,
+                       strides=1)
+    d3 = decoder_layer(d2,
                        e3,
                        128,
                        kernel_size=kernel_size)
-    d2 = decoder_layer(d1,
+    d4 = decoder_layer(d3,
                        e2,
                        64,
                        kernel_size=kernel_size)
-    d3 = decoder_layer(d2,
+    d5 = decoder_layer(d4,
                        e1,
                        32,
                        kernel_size=kernel_size)
@@ -184,7 +201,7 @@ def build_generator(input_shape,
                               kernel_size=kernel_size,
                               strides=1,
                               activation='sigmoid',
-                              padding='same')(d3)
+                              padding='same')(d5)
 
     generator = Model(inputs, outputs, name=name)
 
@@ -232,6 +249,12 @@ def build_discriminator(input_shape,
                       strides=1,
                       activation='leaky_relu',
                       instance_norm=False)
+    # x = encoder_layer(x,
+    #                   512,
+    #                   kernel_size=kernel_size,
+    #                   strides=2,
+    #                   activation='leaky_relu',
+    #                   instance_norm=False)
 
     # if patchgan=True use nxn-dim output of probability
     # else use 1-dim output of probability
@@ -429,14 +452,18 @@ def train_cyclegan(models,
     # whether to use patchgan or not
     if patch > 1:
         d_patch = (patch, patch, 1)
-        valid = hdf5_tmp.create_dataset('valid', data=np.ones((batch_size,) + d_patch))
-        fake = hdf5_tmp.create_dataset('fake', data=np.zeros((batch_size,) + d_patch))
+        valid=np.ones((batch_size,) + d_patch)
+        fake=np.zeros((batch_size,) + d_patch)
+        # valid = hdf5_tmp.create_dataset('valid', data=np.ones((batch_size,) + d_patch))
+        # fake = hdf5_tmp.create_dataset('fake', data=np.zeros((batch_size,) + d_patch))
     else:
-        valid = hdf5_tmp.create_dataset('valid', data=np.ones([batch_size, 1]))
-        fake = hdf5_tmp.create_dataset('fake', data=np.zeros([batch_size, 1]))
+        valid=np.ones([batch_size, 1])
+        fake=np.zeros([batch_size, 1])
+        # valid = hdf5_tmp.create_dataset('valid', data=np.ones([batch_size, 1]))
+        # fake = hdf5_tmp.create_dataset('fake', data=np.zeros([batch_size, 1]))
     # print("2")
-    valid_fake = hdf5_tmp.create_dataset('valid_fake', data=np.concatenate((valid, fake)))
-    # valid_fake_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_filename, 'valid_fake', batch_size_gen)
+    valid_fake = np.concatenate((valid, fake))
+    # valid_fake = hdf5_tmp.create_dataset('valid_fake', data=np.concatenate((valid, fake)))
     # print("3")
     start_time = datetime.datetime.now()
 
@@ -514,42 +541,14 @@ def train_cyclegan(models,
                            show=False,
                            )
 
-        # # monitor cache
-        # print('real target: ', sys.getsizeof(real_target))
-        # print('real source: ', sys.getsizeof(real_source))
-        # print('real source gen: ', sys.getsizeof(real_source_gen))
-        # print('fake target: ', sys.getsizeof(fake_target))
-        # print('x: ', sys.getsizeof(x))
-        # print('real_target_gen: ', sys.getsizeof(real_target_gen))
-        # print('fake_source: ', sys.getsizeof(fake_source))
-        # print('y: ', sys.getsizeof(y))
-
-        # # clear cache
-        # del rng
-        # del rand_indexes
-        # del real_target
-        # del real_source
-        # del real_source_gen
-        # del fake_target
-        # del x
-        # del metrics
-        # del log
-        # del real_target_gen
-        # del fake_source
-        # del y
-        # del elapsed_time
-        # del fmt
-        # gc.collect()
-
-
 
     # save the models after training the generators
     g_source.save(model_name + "-g_source.h5")
     g_target.save(model_name + "-g_target.h5")
 
-    del hdf5_tmp['valid_fake']
-    del hdf5_tmp['valid']
-    del hdf5_tmp['fake']
+    # del hdf5_tmp['valid_fake']
+    # del hdf5_tmp['valid']
+    # del hdf5_tmp['fake']
     hdf5_tmp.close()
     hdf5_input.close()
 
@@ -557,21 +556,22 @@ def train_cyclegan(models,
 
 
 
-def main(source_name, target_name, num_of_data=850, hdf5_tmp_filename='tmp.hdf5', g_models=None):
+def main(source_name, target_name, num_of_data=10000, hdf5_tmp_filename='tmp.hdf5', g_models=None):
     """Build and train a CycleGAN
         """
 
     model_name = 'cyclegan' + source_name + '_cross_' + target_name
     batch_size = 2 # 32
-    train_steps = 100000
+    train_steps = 400000
     patchgan = True # False
-    kernel_size = 5 # 7?
+    kernel_size = 3 # 7?
     postfix = ('%dp' % kernel_size) \
         if patchgan else ('%d' % kernel_size)
 
     print("Batch size: ", batch_size)
     print("Kernel size: ", kernel_size)
     print("Max number of data: ", num_of_data)
+    print("Train steps: ", train_steps)
 
     shapes, hdf5_input_filename = other_utils_opt.load_data(source_name, target_name, num_of_data=num_of_data)
 
@@ -647,15 +647,17 @@ def check_generator(source_name, target_name, hdf5_input_filename, hdf5_tmp_file
 if __name__ == '__main__':
     # ROBIĘ TO INACZEJ NIŻ ONI!!!!!
     parser = argparse.ArgumentParser()
-    # data types to choose from
-    parser.add_argument('data_type', choices=['ct_mr', 't1_stir'], help='Choose group of images.')
+    # # data types to choose from
+    # parser.add_argument('data_type', choices=['ct_mr', 't1_stir'], help='Choose group of images.')
     # source name
     parser.add_argument('source_name',
                         choices=['CT', 'MR_T1DUAL_InPhase', 'MR_T1DUAL_OutPhase', 'MR_T2SPIR', 'T1', 'STIR'], help='Source name. Please choose source and target in the same group (CT-MR or T1-STIR).')
     parser.add_argument('target_name',
                         choices=['CT', 'MR_T1DUAL_InPhase', 'MR_T1DUAL_OutPhase', 'MR_T2SPIR', 'T1', 'STIR'], help='Target name. Please choose source and target in the same group (CT-MR or T1-STIR).')
-    args = parser.parse_args()
+    parser.add_argument('num_of_data')
 
+    args = parser.parse_args()
+    main(source_name=args.source_name, target_name=args.target_name, num_of_data=args.num_of_data)
     #  za dużo kombinacji do rozważenia tutaj też
     # # load pre-trained cifar10 source & target generators
     # if args.cifar10_g_source:
@@ -673,12 +675,12 @@ if __name__ == '__main__':
     #         mnist_cross_svhn(g_models)
     # train a cifar10 CycleGAN
     # tu powinno być elif!!!
-    if args.data_type == 'ct_mr':
-        print(gpu_device_name())
-        main(source_name=args.source_name, target_name=args.target_name)
-    if args.data_type == 't1_stir':
-        print(gpu_device_name())
-        main(source_name=args.source_name, target_name=args.target_name)
+    # if args.data_type == 'ct_mr':
+    #     print(gpu_device_name())
+    #     main(source_name=args.source_name, target_name=args.target_name)
+    # if args.data_type == 't1_stir':
+    #     print(gpu_device_name())
+    #     main(source_name=args.source_name, target_name=args.target_name)
     # # train a mnist-svhn CycleGAN
     # else:
     #     mnist_cross_svhn()

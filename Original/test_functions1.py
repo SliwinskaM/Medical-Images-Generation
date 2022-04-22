@@ -1,0 +1,3 @@
+import cyclegan_main
+
+cyclegan_main.graycifar10_cross_colorcifar10()

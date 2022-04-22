@@ -17,6 +17,7 @@ import h5py
 import gc
 from keras.utils import np_utils
 
+
 def rgb2gray(rgb):
     """Convert from color image (RGB) to grayscale
        Reference: opencv.org
@@ -132,16 +133,11 @@ def test_generator(generators,
     hdf5_tmp = h5py.File(hdf5_tmp_filename, "a") # Read/write if exists, create otherwise
     pred_target_data = hdf5_tmp.create_dataset("pred_target_data", data=g_target.predict(test_source_data_gen.generator(passes=1)))
     pred_target_data_gen = HDF5DatasetGenerator(hdf5_tmp_filename, "pred_target_data", batch_size_gen)
-    print("aa")
     pred_source_data = hdf5_tmp.create_dataset("pred_source_data", data=g_source.predict(test_target_data_gen.generator(passes=1)))
     pred_source_data_gen = HDF5DatasetGenerator(hdf5_tmp_filename, "pred_source_data", batch_size_gen)
-    print("ab")
-    # jakoś zmergować pred_*_data i pred_*_data_gen, jeśli dalej nie pójdzie
 
     reco_source_data = hdf5_tmp.create_dataset("reco_source_data", data=g_source.predict(pred_target_data_gen.generator(passes=1)))
-    print("ac")
     reco_target_data = hdf5_tmp.create_dataset("reco_target_data", data=g_target.predict(pred_source_data_gen.generator(passes=1)))
-    print("b")
 
 
     # display the 1st todisplay images
@@ -198,45 +194,32 @@ def test_generator(generators,
     print("f")
     # hdf5_tmp.close()
 
-    # # monitor cache
-    # print('test_source_data_gen: ', sys.getsizeof(test_source_data_gen))
-    # print('test_target_data_gen: ', sys.getsizeof(test_target_data_gen))
-    # print('g_source: ', sys.getsizeof(g_source))
-    # print('g_target: ', sys.getsizeof(g_target))
-    # print('hdf5_tmp: ', sys.getsizeof(hdf5_tmp))
-    # print('pred_target_data: ', sys.getsizeof(pred_target_data))
-    # print('pred_target_data_gen: ', sys.getsizeof(pred_target_data_gen))
-    # print('pred_source_data: ', sys.getsizeof(pred_source_data))
-    # print('pred_source_data_gen: ', sys.getsizeof(pred_source_data_gen))
-    # print('reco_source_data: ', sys.getsizeof(reco_source_data))
-    # print('reco_target_data: ', sys.getsizeof(reco_target_data))
-    # print('imgs: ', sys.getsizeof(imgs))
 
+def load_data(source_name, target_name, num_of_data=100):
+    # get source data shape from h5py file
+    hdf5_input_filename = 'input_' + source_name + '_' + target_name + '_' + str(num_of_data) + '.hdf5'
+    diskfile = h5py.File(hdf5_input_filename, "r")
+    source_data_shape = diskfile['source_data'].shape
+    target_data_shape = diskfile['target_data'].shape
+    diskfile.close()
 
-    # # cleear cache
-    # del test_source_data_gen
-    # del test_target_data_gen
-    # del g_source
-    # del g_target
-    # del title_pred_source
-    # del title_pred_target
-    # del title_reco_source
-    # del title_reco_target
-    # del dir_pred_source
-    # del dir_pred_target
-    # del hdf5_tmp
-    # del pred_target_data
-    # del pred_target_data_gen
-    # del pred_source_data
-    # del pred_source_data_gen
-    # del reco_source_data
-    # del reco_target_data
-    # del imgs
-    # gc.collect()
+    rows = source_data_shape[1]
+    cols = source_data_shape[2]
+    channels = source_data_shape[3]
+    source_shape = (rows, cols, channels)
+
+    rows = target_data_shape[1]
+    cols = target_data_shape[2]
+    channels = target_data_shape[3]
+    target_shape = (rows, cols, channels)
+
+    shapes = (source_shape, target_shape)
+
+    return shapes, hdf5_input_filename
 
 
 
-
+### H5PY UTILS ###
 def create_hdf5_file(data, titles, filenames, hdf5_input_filename, todisplay=100):
     """Generic loaded data transformation
 
@@ -278,96 +261,16 @@ def create_hdf5_file(data, titles, filenames, hdf5_input_filename, todisplay=100
     print("Creating hdf5 file")
     diskfile = h5py.File(hdf5_input_filename, "w") # Create file, truncate if exists
     diskfile.create_dataset("source_data", data=source_data, dtype='float32')
+    print('u')
     diskfile.create_dataset("test_source_data", data=test_source_data, dtype='float32')
+    print('uu')
 
     diskfile.create_dataset("target_data", data=target_data, dtype='float32')
+    print('uuu')
     diskfile.create_dataset("test_target_data", data=test_target_data, dtype='float32')
+    print('uuuu')
 
     diskfile.close()
-
-
-
-def load_data(source_name, target_name, num_of_data=100):
-    # get source data shape from h5py file
-    hdf5_input_filename = 'input_' + source_name + '_' + target_name + '_' + str(num_of_data) + '.hdf5'
-    diskfile = h5py.File(hdf5_input_filename, "r")
-    source_data_shape = diskfile['source_data'].shape
-    target_data_shape = diskfile['target_data'].shape
-    diskfile.close()
-
-    rows = source_data_shape[1]
-    cols = source_data_shape[2]
-    channels = source_data_shape[3]
-    source_shape = (rows, cols, channels)
-
-    rows = target_data_shape[1]
-    cols = target_data_shape[2]
-    channels = target_data_shape[3]
-    target_shape = (rows, cols, channels)
-
-    shapes = (source_shape, target_shape)
-
-    return shapes, hdf5_input_filename
-
-
-
-# functions for hdf5
-class HDF5DatasetWriter:
-    def __init__(self, dims, outputPath, dataKey="images",
-        bufSize=1000):
-        # check to see if the output path exists, and if so, raise
-        # an exception
-        if os.path.exists(outputPath):
-            raise ValueError("The supplied `outputPath` already "
-                "exists and cannot be overwritten. Manually delete "
-                "the file before continuing.", outputPath)
-
-        # open the HDF5 database for writing and create two datasets:
-        # one to store the images/features and another to store the
-        # class labels
-        self.db = h5py.File(outputPath, "w")
-        self.data = self.db.create_dataset(dataKey, dims,dtype="float")
-        self.labels = self.db.create_dataset("labels", (dims[0],),dtype="int")
-
-        # store the buffer size, then initialize the buffer itself
-        # along with the index into the datasets
-        self.bufSize = bufSize
-        self.buffer = {"data": [], "labels": []}
-        self.idx = 0
-
-    def add(self, rows, labels):
-        # add the rows and labels to the buffer
-        self.buffer["data"].extend(rows)
-        self.buffer["labels"].extend(labels)
-
-        # check to see if the buffer needs to be flushed to disk
-        if len(self.buffer["data"]) >= self.bufSize:
-            self.flush()
-
-    def flush(self):
-        # write the buffers to disk then reset the buffer
-        i = self.idx + len(self.buffer["data"])
-        self.data[self.idx:i] = self.buffer["data"]
-        self.labels[self.idx:i] = self.buffer["labels"]
-        self.idx = i
-        self.buffer = {"data": [], "labels": []}
-
-    def storeClassLabels(self, classLabels):
-        # create a dataset to store the actual class label names,
-        # then store the class labels
-        dt = h5py.special_dtype(vlen=str) # `vlen=unicode` for Py2.7
-        labelSet = self.db.create_dataset("label_names",(len(classLabels),), dtype=dt)
-        labelSet[:] = classLabels
-
-    def close(self):
-        # check to see if there are any other entries in the buffer
-        # that need to be flushed to disk
-        if len(self.buffer["data"]) > 0:
-            self.flush()
-
-        # close the dataset
-        self.db.close()
-
 
 
 class HDF5DatasetGenerator:
@@ -403,38 +306,21 @@ class HDF5DatasetGenerator:
             # loop over the HDF5 dataset
             iter = np.arange(0, self.numImages, self.batchSize) # u krzysztofrzecki: np.arange(0, self.numImages - self.batchSize, self.batchSize)
             for i in iter:
-                # extract the images and labels from the HDF dataset
-                # images = []
-                # labels = []
-                # for n in range(i, i + self.batchSize):
-                #     dbID = self.patches[n][0]
-                #     imID = self.patches[n][1]
-                #     images.append(self.db[self.dataset_name][imID])
-                #     # labels.append((self.dbs[dbID])["labels"][imID])
-
                 images = self.db[self.dataset_name][i: i + self.batchSize]
-                # images2 = np.asarray(images, dtype=np.float32)
-                # rowne = np.all(images2 == images)
-                # labels = np.asarray(labels, dtype=np.uint8)
-
-                # check to see if the labels should be binarized
-                # if self.binarize:
-                #     labels = np_utils.to_categorical(labels, self.classes)
-
-                # yield a tuple of images and labels
-                # yield (images, labels)
-                # print('yielding: ', images)
                 self.tmp.append(images)
                 yield images
 
             # increment the total number of epochs
             epochs += 1
-            # # clear cache
-            # del images
-            # gc.collect()
-            # print("Koniec epoki ", epochs)
-        # print("Koniec generatora")
 
-        # def close(self):
-        #     # close the database
-        #     self.db.close()
+
+
+
+
+# OTHER
+def rgb2gray(rgb):
+    """Convert from color image (RGB) to grayscale
+       Reference: opencv.org
+       Formula: grayscale = 0.299*red + 0.587*green + 0.114*blue
+    """
+    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])

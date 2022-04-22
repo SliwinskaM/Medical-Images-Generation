@@ -2,72 +2,96 @@ import matplotlib.pyplot as plt
 import pydicom
 import numpy as np
 import glob
+import cv2
+import tensorflow as tf
+from tensorflow.keras import layers
+import h5py
+import random
 
 import other_utils_opt
 
 
-def get_data(prefix1, sufix1, prefix2, num_of_data):
+def get_data(prefix1, sufix1, prefix2, size, num_of_data):
     all_source = []
-    lengths = []
+    lengths = {}
 
     cnt = 0
     print("Liczba obrazów: ", num_of_data)
 
-    for folder_num in range(1, 40):
+    for folder_num in range(1, 41):
         files = sorted(glob.glob(prefix1 + str(folder_num) + sufix1))  # get all the .dcm files from folder
         counter = 0
         for file in files:  # iterate over the list of files
             if cnt < num_of_data:
+                print(folder_num, counter, cnt)
                 cnt += 1
 
                 # read and append to array (funkcja 1)
-                img = pydicom.dcmread(file)
+                try:
+                    img = pydicom.dcmread(file)
+                except pydicom.errors.InvalidDicomError:
+                    print("Error in reading file ", file)
+                    continue
+
                 img_array = np.array(img.pixel_array)
 
-                if len(img_array) not in lengths:
-                    lengths.append(len(img_array))
+                # helper
+                if len(img_array) in lengths:
+                    lengths[len(img_array)] += 1
+                else:
+                    lengths[len(img_array)] = 1
 
-                # pad certain arrays to unify array lengths through one data source (to 400x400)
-                if len(img_array) < 400:
-                    img_array = np.pad(img_array, ((0, 400-len(img_array)), (0, 400-len(img_array))))
+                # pad certain arrays to unify array lengths through one data source
+                if len(img_array) != size:
+                    img_array = cv2.resize(img_array, (size, size))
                 all_source.append(img_array)
 
-                # # save to folder (funkcja 2)
-                # fig = plt.figure(frameon=False)
-                # # fig.set_size_inches(w,h)
-                # ax = plt.Axes(fig, [0., 0., 1., 1.])
-                # ax.set_axis_off()
-                # fig.add_axes(ax)
-                # ax.imshow(img_array, aspect='auto')
-                # fig.savefig(prefix2 + str(folder_num) + '_' + str(counter)) #, dpi)
-                # counter += 1
+                # save to folder (funkcja 2)
+                fig = plt.figure(frameon=False)
+                # fig.set_size_inches(w,h)
+                ax = plt.Axes(fig, [0., 0., 1., 1.])
+                ax.set_axis_off()
+                fig.add_axes(ax)
+                ax.imshow(img_array, aspect='auto')
+                fig.savefig(prefix2 + str(folder_num) + '_' + str(counter))  # , dpi)
+                counter += 1
     # plt.show()
     all_source = np.array(all_source)
+    if all_source.size == 0:
+        raise Exception("No data")
     # print(change_ctr)
-    # print(lengths)
+    print(lengths)
     return all_source
 
 
-def create_hdf5_file(source_name, target_name, num_of_data=100, prefix_pendrive=None):
+def create_hdf5_file(source_name, target_name, augmentation=False, num_of_data=10000, prefix_pendrive=None):
     print("Loading data")
     # get_data arguments and image width
     dataset_dir_dict = {
         "CT": [prefix_pendrive + "Data_CT_MR/CT/", "/DICOM_anon/*.dcm",
                prefix_pendrive + "Data_CT_MR/CT/all_pyplot/", 512],
         "MR_T1DUAL_InPhase": [prefix_pendrive + "Data_CT_MR/MR/", "/T1DUAL/DICOM_anon/InPhase/*.dcm",
-                              prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T1DUAL/InPhase/", 400],
+                              prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T1DUAL/InPhase/", 256],
         "MR_T1DUAL_OutPhase": [prefix_pendrive + "Data_CT_MR/MR/", "/T1DUAL/DICOM_anon/OutPhase/*.dcm",
-                               prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T1DUAL/OutPhase/", 400],
+                               prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T1DUAL/OutPhase/", 256],
         "MR_T2SPIR": [prefix_pendrive + "Data_CT_MR/MR/", "/T2SPIR/DICOM_anon/*.dcm",
-                      prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T2SPIR/", 400]
+                      prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T2SPIR/", 256]
     }
+    # optional augmentation
+    data_augmentation = tf.keras.Sequential([
+        layers.experimental.preprocessing.RandomFlip("horizontal_and_vertical"),
+        layers.experimental.preprocessing.RandomRotation(0.05),
+        layers.RandomZoom(height_factor=(-0.3, 0.1))
+    ])
+
     # load source data
     source_all = get_data(dataset_dir_dict[source_name][0], dataset_dir_dict[source_name][1],
-                             dataset_dir_dict[source_name][2], num_of_data)
+                          dataset_dir_dict[source_name][2], dataset_dir_dict[source_name][3], num_of_data)
 
     # pad source images with zeros if necessary
     if dataset_dir_dict[source_name][3] < dataset_dir_dict[target_name][3]:
-        source_all = np.pad(source_all, ((0, 0), (0, 512-400), (0, 512-400)))
+        source_all = [cv2.resize(img, (dataset_dir_dict[target_name][3], dataset_dir_dict[target_name][3]))
+                      for img in source_all]
 
     # input image dimensions
     # we assume data format "channels_last"
@@ -78,22 +102,29 @@ def create_hdf5_file(source_name, target_name, num_of_data=100, prefix_pendrive=
     # reshape images to row x col x channels
     # for CNN output/validation
     size = source_all.shape[0]
-    source_all = source_all.reshape(size,rows, cols, channels)
+    source_all = source_all.reshape(size, rows, cols, channels)
 
     # divide data into train and test sets
+    random.shuffle(source_all)
     threshold = len(source_all) // 7
     source_data = source_all[:-threshold]
     test_source_data = source_all[-threshold:]
-    print("Source loaded", len(source_data), len(test_source_data))
 
+    if augmentation:
+        for i in range(len(source_data)):
+            source_data[i] = data_augmentation(source_data[i].astype('int32'))
+        display_data(source_data, dataset_dir_dict[source_name][0], 'all_augmented/')
+
+    print("Source loaded", len(source_data), len(test_source_data))
 
     # load target data
     target_all = get_data(dataset_dir_dict[target_name][0], dataset_dir_dict[target_name][1],
-                          dataset_dir_dict[target_name][2], num_of_data)
+                          dataset_dir_dict[target_name][2], dataset_dir_dict[target_name][3], num_of_data)
 
     # pad source images with zeros if necessary
     if dataset_dir_dict[target_name][3] < dataset_dir_dict[source_name][3]:
-        target_all = np.pad(target_all, ((0, 0), (0, 512-400), (0, 512-400)))
+        target_all = np.array([cv2.resize(img, (dataset_dir_dict[source_name][3], dataset_dir_dict[source_name][3]))
+                      for img in target_all])
 
     # input image dimensions
     # we assume data format "channels_last"
@@ -108,21 +139,176 @@ def create_hdf5_file(source_name, target_name, num_of_data=100, prefix_pendrive=
 
     # divide data into train and test sets
     # target_data, test_target_data = train_test_split(target_all, test_size=0.14)
+    random.shuffle(target_all)
     threshold = len(target_all) // 7
     target_data = target_all[:-threshold]
     test_target_data = target_all[-threshold:]
+
+    if augmentation:
+        for i in range(len(target_data)):
+            target_data[i] = data_augmentation(target_data[i].astype('int32'))
+        display_data(target_data, dataset_dir_dict[target_name][0], 'all_augmented/')
+
     print("Target loaded")
 
-    #all the data
+    # all the data
     data = (source_data, target_data, test_source_data, test_target_data)
     filenames = (source_name + '_test_source.png', target_name + '_test_target.png')
     titles = (source_name + ' test source images', target_name + ' test target images')
-    hdf5_filename = 'input_' + source_name + '_' + target_name + '_' + str(num_of_data) + '.hdf5'
+    hdf5_input_filename = 'input_' + source_name + '_' + target_name + '_' + str(num_of_data) + '.hdf5'
 
-    return other_utils_opt.create_hdf5_file(data, titles, filenames, hdf5_filename)
+    return other_utils_opt.create_hdf5_file(data, titles, filenames, hdf5_input_filename)
 
 
-"""Can't run in docker!"""
-def create_hdf5_file_adata(source_name, target_name, num_of_data=100):
-    create_hdf5_file(source_name, target_name, num_of_data=num_of_data, prefix_pendrive='/media/gosia/ADATA UFD/')
 
+def display_data(imgs, dir, dir_save):
+    counter = 0
+
+    imgs = imgs.reshape((imgs.shape[0], imgs.shape[1], imgs.shape[2]))
+    for img_array in imgs:
+        fig = plt.figure(frameon=False)
+        ax = plt.Axes(fig, [0., 0., 1., 1.])
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        ax.imshow(img_array, aspect='auto')
+        fig.savefig(dir + dir_save + str(counter)) #, dpi)
+        counter += 1
+
+
+
+
+# def create_by_parts_hdf5_file(source_name, target_name, augmentation=False, num_of_data=10000, prefix_pendrive=None, todisplay=100):
+#     print("Loading data")
+#     # get_data arguments and image width
+#     dataset_dir_dict = {
+#         "CT": [prefix_pendrive + "Data_CT_MR/CT/", "/DICOM_anon/*.dcm",
+#                prefix_pendrive + "Data_CT_MR/CT/all_pyplot/", 512],
+#         "MR_T1DUAL_InPhase": [prefix_pendrive + "Data_CT_MR/MR/", "/T1DUAL/DICOM_anon/InPhase/*.dcm",
+#                               prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T1DUAL/InPhase/", 256],
+#         "MR_T1DUAL_OutPhase": [prefix_pendrive + "Data_CT_MR/MR/", "/T1DUAL/DICOM_anon/OutPhase/*.dcm",
+#                                prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T1DUAL/OutPhase/", 256],
+#         "MR_T2SPIR": [prefix_pendrive + "Data_CT_MR/MR/", "/T2SPIR/DICOM_anon/*.dcm",
+#                       prefix_pendrive + "Data_CT_MR/MR/all_pyplot/T2SPIR/", 256]
+#     }
+#     # optional augmentation
+#     data_augmentation = tf.keras.Sequential([
+#         layers.experimental.preprocessing.RandomFlip("horizontal_and_vertical"),
+#         layers.experimental.preprocessing.RandomRotation(0.05),
+#         layers.RandomZoom(height_factor=(-0.3, 0.1))
+#     ])
+#
+#     # -------load source data----------
+#     source_all = get_data(dataset_dir_dict[source_name][0], dataset_dir_dict[source_name][1],
+#                           dataset_dir_dict[source_name][2], dataset_dir_dict[source_name][3], num_of_data)
+#
+#     # pad source images with zeros if necessary
+#     if dataset_dir_dict[source_name][3] < dataset_dir_dict[target_name][3]:
+#         source_all = [cv2.resize(img, (dataset_dir_dict[target_name][3], dataset_dir_dict[target_name][3]))
+#                       for img in source_all]
+#
+#     # input image dimensions
+#     # we assume data format "channels_last"
+#     rows = source_all.shape[1]
+#     cols = source_all.shape[2]
+#     channels = 1
+#
+#     # reshape images to row x col x channels
+#     # for CNN output/validation
+#     size = source_all.shape[0]
+#     source_all = source_all.reshape(size, rows, cols, channels)
+#
+#     # divide data into train and test sets
+#     threshold = len(source_all) // 7
+#     source_data = source_all[:-threshold]
+#     test_source_data = source_all[-threshold:]
+#
+#     if augmentation:
+#         for i in range(len(source_data)):
+#             source_data[i] = data_augmentation(source_data[i].astype('int32'))
+#         display_data(source_data, dataset_dir_dict[source_name][0], 'all_augmented/')
+#
+#     print("Source loaded", len(source_data), len(test_source_data))
+#
+#     # -------create hdf5 file - part 1-----------
+#     hdf5_input_filename = 'input_' + source_name + '_' + target_name + '_' + str(num_of_data) + '.hdf5'
+#
+#     test_source_filename, test_target_filename = (source_name + '_test_source.png', target_name + '_test_target.png')
+#     test_source_title, test_target_title = (source_name + ' test source images', target_name + ' test target images')
+#
+#     # display test source images
+#     imgs = test_source_data[:todisplay]
+#     other_utils_opt.display_images(imgs,
+#                    filename=test_source_filename,
+#                    title=test_source_title)
+#
+#     # normalize images
+#     source_data = source_data.astype('float32') / 255
+#     test_source_data = test_source_data.astype('float32') / 255
+#
+#
+#     # write data to hdf5 file
+#     print("Creating hdf5 file part 1")
+#     diskfile = h5py.File(hdf5_input_filename, "w") # Create file, truncate if exists
+#     diskfile.create_dataset("source_data", data=source_data, dtype='float32')
+#     print('u')
+#     diskfile.create_dataset("test_source_data", data=test_source_data, dtype='float32')
+#     print('uu')
+#
+#     diskfile.close()
+#
+#
+#
+#     # ------load target data----------
+#     target_all = get_data(dataset_dir_dict[target_name][0], dataset_dir_dict[target_name][1],
+#                           dataset_dir_dict[target_name][2], dataset_dir_dict[target_name][3], num_of_data)
+#
+#     # pad source images with zeros if necessary
+#     if dataset_dir_dict[target_name][3] < dataset_dir_dict[source_name][3]:
+#         target_all = np.array([cv2.resize(img, (dataset_dir_dict[source_name][3], dataset_dir_dict[source_name][3]))
+#                       for img in target_all])
+#
+#     # input image dimensions
+#     # we assume data format "channels_last"
+#     rows = target_all.shape[1]
+#     cols = target_all.shape[2]
+#     channels = 1
+#
+#     # reshape images to row x col x channels
+#     # for CNN output/validation
+#     size = target_all.shape[0]
+#     target_all = target_all.reshape(size, rows, cols, channels)
+#
+#     # divide data into train and test sets
+#     # target_data, test_target_data = train_test_split(target_all, test_size=0.14)
+#     threshold = len(target_all) // 7
+#     target_data = target_all[:-threshold]
+#     test_target_data = target_all[-threshold:]
+#
+#     if augmentation:
+#         for i in range(len(target_data)):
+#             target_data[i] = data_augmentation(target_data[i].astype('int32'))
+#         display_data(target_data, dataset_dir_dict[target_name][0], 'all_augmented/')
+#
+#     print("Target loaded")
+#
+#
+#     # ------create hdf5 file - part 2-------
+#
+#     # display test target images
+#     imgs = test_target_data[:todisplay]
+#     other_utils_opt.display_images(imgs,
+#                    filename=test_target_filename,
+#                    title=test_target_title)
+#
+#     # normalize images
+#     target_data = target_data.astype('float32') / 255
+#     test_target_data = test_target_data.astype('float32') / 255
+#
+#     # write data to hdf5 file
+#     print("Creating hdf5 file part 2")
+#     diskfile = h5py.File(hdf5_input_filename, "a")
+#     diskfile.create_dataset("target_data", data=target_data, dtype='float32')
+#     print('uuu')
+#     diskfile.create_dataset("test_target_data", data=test_target_data, dtype='float32')
+#     print('uuuu')
+#     diskfile.close()
