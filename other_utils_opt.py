@@ -7,23 +7,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sys
-
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 import math
 import h5py
-import gc
-from keras.utils import np_utils
 
-
-def rgb2gray(rgb):
-    """Convert from color image (RGB) to grayscale
-       Reference: opencv.org
-       Formula: grayscale = 0.299*red + 0.587*green + 0.114*blue
-    """
-    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
 
 
 def display_images(imgs,
@@ -46,7 +35,6 @@ def display_images(imgs,
     rows = imgs.shape[1]
     cols = imgs.shape[2]
     channels = imgs.shape[3]
-    # dopisane przeze mnie, żeby dane były zawsze "kwadratowe" i wyraźne
     side = min(int(math.sqrt(imgs.shape[0])), 5)
     if random:
         rng = np.random.default_rng()
@@ -85,10 +73,6 @@ def display_images(imgs,
 
     plt.close('all')
 
-    # # clear cache
-    # del imgs
-    # gc.collect()
-
 
 
 
@@ -117,8 +101,6 @@ def test_generator(generators,
     """
 
     # open hdf5 file
-    # hdf5_input = h5py.File(hdf5_input_filename, "r")
-    # test_source_data, test_target_data = hdf5_input['test_source_data'], hdf5_input['test_target_data']
     batch_size_gen = 1
     test_source_data_gen = HDF5DatasetGenerator(hdf5_input_filename, 'test_source_data', batch_size_gen)
     test_target_data_gen = HDF5DatasetGenerator(hdf5_input_filename, 'test_target_data', batch_size_gen)
@@ -192,7 +174,6 @@ def test_generator(generators,
     del hdf5_tmp['reco_source_data']
     del hdf5_tmp['reco_target_data']
     print("f")
-    # hdf5_tmp.close()
 
 
 def load_data(source_name, target_name, num_of_data=100):
@@ -216,6 +197,18 @@ def load_data(source_name, target_name, num_of_data=100):
     shapes = (source_shape, target_shape)
 
     return shapes, hdf5_input_filename
+
+
+
+
+
+def rgb2gray(rgb):
+    """Convert from color image (RGB) to grayscale
+       Reference: opencv.org
+       Formula: grayscale = 0.299*red + 0.587*green + 0.114*blue
+    """
+    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
+
 
 
 
@@ -261,14 +254,10 @@ def create_hdf5_file(data, titles, filenames, hdf5_input_filename, todisplay=100
     print("Creating hdf5 file")
     diskfile = h5py.File(hdf5_input_filename, "w") # Create file, truncate if exists
     diskfile.create_dataset("source_data", data=source_data, dtype='float32')
-    print('u')
     diskfile.create_dataset("test_source_data", data=test_source_data, dtype='float32')
-    print('uu')
 
     diskfile.create_dataset("target_data", data=target_data, dtype='float32')
-    print('uuu')
     diskfile.create_dataset("test_target_data", data=test_target_data, dtype='float32')
-    print('uuuu')
 
     diskfile.close()
 
@@ -304,7 +293,7 @@ class HDF5DatasetGenerator:
         # reach the desired number of epochs
         while epochs < passes:
             # loop over the HDF5 dataset
-            iter = np.arange(0, self.numImages, self.batchSize) # u krzysztofrzecki: np.arange(0, self.numImages - self.batchSize, self.batchSize)
+            iter = np.arange(0, self.numImages, self.batchSize)
             for i in iter:
                 images = self.db[self.dataset_name][i: i + self.batchSize]
                 self.tmp.append(images)
@@ -315,12 +304,3 @@ class HDF5DatasetGenerator:
 
 
 
-
-
-# OTHER
-def rgb2gray(rgb):
-    """Convert from color image (RGB) to grayscale
-       Reference: opencv.org
-       Formula: grayscale = 0.299*red + 0.587*green + 0.114*blue
-    """
-    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])

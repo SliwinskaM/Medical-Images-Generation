@@ -1,1 +1,0 @@
-python3 cyclegan-7.1.1.py -c > color_output_org

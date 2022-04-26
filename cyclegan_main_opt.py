@@ -50,22 +50,12 @@ from tensorflow.keras.layers import concatenate
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.models import Model
 
-from tensorflow.test import gpu_device_name
-from tensorflow.keras.models import load_model
-
-# from keras_contrib.layers.normalization import InstanceNormalization
-# from keras_contrib.layers.normalization.instancenormalization import InstanceNormalization
-# install: pip install tensorflow-addons
 from tensorflow_addons.layers import InstanceNormalization
 
 import numpy as np
 import argparse
 import datetime
 import h5py
-import gc
-
-import CT_MR_utils_opt
-# import T1_STIR_utils_opt
 import other_utils_opt
 
 
@@ -249,14 +239,6 @@ def build_discriminator(input_shape,
                       strides=1,
                       activation='leaky_relu',
                       instance_norm=False)
-    # x = encoder_layer(x,
-    #                   512,
-    #                   kernel_size=kernel_size,
-    #                   strides=2,
-    #                   activation='leaky_relu',
-    #                   instance_norm=False)
-
-    # if patchgan=True use nxn-dim output of probability
     # else use 1-dim output of probability
     if patchgan:
         x = LeakyReLU(alpha=0.2)(x)
@@ -440,7 +422,6 @@ def train_cyclegan(models,
     # train dataset
     source_data, target_data, test_source_data, test_target_data = hdf5_input['source_data'], hdf5_input['target_data'], \
                                                                    hdf5_input['test_source_data'], hdf5_input['test_target_data']
-    # print("1")
     titles, dirs = test_params
 
 
@@ -454,17 +435,10 @@ def train_cyclegan(models,
         d_patch = (patch, patch, 1)
         valid=np.ones((batch_size,) + d_patch)
         fake=np.zeros((batch_size,) + d_patch)
-        # valid = hdf5_tmp.create_dataset('valid', data=np.ones((batch_size,) + d_patch))
-        # fake = hdf5_tmp.create_dataset('fake', data=np.zeros((batch_size,) + d_patch))
     else:
         valid=np.ones([batch_size, 1])
         fake=np.zeros([batch_size, 1])
-        # valid = hdf5_tmp.create_dataset('valid', data=np.ones([batch_size, 1]))
-        # fake = hdf5_tmp.create_dataset('fake', data=np.zeros([batch_size, 1]))
-    # print("2")
     valid_fake = np.concatenate((valid, fake))
-    # valid_fake = hdf5_tmp.create_dataset('valid_fake', data=np.concatenate((valid, fake)))
-    # print("3")
     start_time = datetime.datetime.now()
 
 
@@ -475,7 +449,6 @@ def train_cyclegan(models,
         rand_indexes = np.sort(rand_indexes)
         # add real source samples to hdf5 file
         real_target = hdf5_tmp.create_dataset('real_target', data=target_data[rand_indexes])
-        # print("4")
 
         # sample a batch of real source data
         rng = np.random.default_rng()
@@ -483,30 +456,22 @@ def train_cyclegan(models,
         rand_indexes = np.sort(rand_indexes)
         # add real source samples to hdf5 file
         real_source = hdf5_tmp.create_dataset('real_source', data=source_data[rand_indexes])
-        # print("5")
         # generate a batch of fake target data fr real source data
         real_source_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_tmp_filename, 'real_source', batch_size_gen)
-        fake_target = hdf5_tmp.create_dataset('fake_target', data=g_target.predict(real_source_gen.generator(passes=1)))   #(real_source_gen.generator()))  #(real_source))
-        # print("6")
+        fake_target = hdf5_tmp.create_dataset('fake_target', data=g_target.predict(real_source_gen.generator(passes=1)))
 
         # combine real and fake into one batch
         x = hdf5_tmp.create_dataset('x', data=np.concatenate((real_target, fake_target)))
-        # x_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_filename, 'x', batch_size_gen)
-        # print("7")
         # train the target discriminator using fake/real data
         # cannot use generators here
         metrics = d_target.train_on_batch(x, valid_fake)
-        # print("8")
         del hdf5_tmp['x']
         log = "%d: [d_target loss: %f]" % (step, metrics[0])
 
         # generate a batch of fake source data fr real target data
         real_target_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_tmp_filename, 'real_target', batch_size_gen)
         fake_source = hdf5_tmp.create_dataset('fake_source', data=g_source.predict(real_target_gen.generator(passes=1)))
-        # print("9")
         x = hdf5_tmp.create_dataset('x', data= np.concatenate((real_source, fake_source)))
-        # x_gen = other_utils_opt.HDF5DatasetGenerator(hdf5_filename, 'x', batch_size_gen)
-        # print("10")
         # train the source discriminator using fake/real data
         # cannot use generators here
         metrics = d_source.train_on_batch(x, valid_fake)
@@ -525,7 +490,6 @@ def train_cyclegan(models,
         metrics = adv.train_on_batch(x, y)
         del hdf5_tmp['real_target']
         del hdf5_tmp['real_source']
-        # print("12")
         elapsed_time = datetime.datetime.now() - start_time
         fmt = "%s [adv loss: %f] [time: %s]"
         log = fmt % (log, metrics[0], elapsed_time)
@@ -546,9 +510,6 @@ def train_cyclegan(models,
     g_source.save(model_name + "-g_source.h5")
     g_target.save(model_name + "-g_target.h5")
 
-    # del hdf5_tmp['valid_fake']
-    # del hdf5_tmp['valid']
-    # del hdf5_tmp['fake']
     hdf5_tmp.close()
     hdf5_input.close()
 
@@ -562,7 +523,7 @@ def main(source_name, target_name, num_of_data=10000, hdf5_tmp_filename='tmp.hdf
 
     model_name = 'cyclegan' + source_name + '_cross_' + target_name
     batch_size = 2 # 32
-    train_steps = 400000
+    train_steps = 100000
     patchgan = True # False
     kernel_size = 3 # 7?
     postfix = ('%dp' % kernel_size) \
@@ -623,7 +584,7 @@ def main(source_name, target_name, num_of_data=10000, hdf5_tmp_filename='tmp.hdf
 
 
 
-def check_generator(source_name, target_name, hdf5_input_filename, hdf5_tmp_filename='tmp.hdf5', g_models=None):
+def check_generator(source_name, target_name, hdf5_input_filename, hdf5_tmp_filename='tmp2.hdf5', g_models=None):
     titles = (source_name + ' predicted source images.',
               target_name + ' predicted target images.',
               source_name + ' reconstructed source images.',
@@ -633,54 +594,27 @@ def check_generator(source_name, target_name, hdf5_input_filename, hdf5_tmp_file
     # with provided model generate predicted target and source images
     if g_models is not None:
         g_source, g_target = g_models
-        other_utils_opt.test_generator((g_source, g_target),
-                                   step=0,
-                                   titles=titles,
-                                   dirs=dirs,
-                                   hdf5_input_filename=hdf5_input_filename,
-                                    hdf5_tmp_filename=hdf5_tmp_filename,
-                                    todisplay=800,
-                                   show=True)
+        other_utils_opt.test_generator2((g_source, g_target),
+                                        step=0,
+                                        titles=titles,
+                                        dirs=dirs,
+                                        hdf5_input_filename=hdf5_input_filename,
+                                        hdf5_tmp_filename=hdf5_tmp_filename,
+                                        todisplay=800,
+                                        show=True)
         return
 
 
 if __name__ == '__main__':
-    # ROBIĘ TO INACZEJ NIŻ ONI!!!!!
     parser = argparse.ArgumentParser()
-    # # data types to choose from
-    # parser.add_argument('data_type', choices=['ct_mr', 't1_stir'], help='Choose group of images.')
     # source name
     parser.add_argument('source_name',
-                        choices=['CT', 'MR_T1DUAL_InPhase', 'MR_T1DUAL_OutPhase', 'MR_T2SPIR', 'T1', 'STIR'], help='Source name. Please choose source and target in the same group (CT-MR or T1-STIR).')
+                        choices=['CT', 'MR_T1DUAL_InPhase', 'MR_T1DUAL_OutPhase', 'MR_T2SPIR', 'T1', 'STIR'],
+                        help='Source name. Please choose source and target in the same group (CT-MR or T1-STIR).')
     parser.add_argument('target_name',
-                        choices=['CT', 'MR_T1DUAL_InPhase', 'MR_T1DUAL_OutPhase', 'MR_T2SPIR', 'T1', 'STIR'], help='Target name. Please choose source and target in the same group (CT-MR or T1-STIR).')
+                        choices=['CT', 'MR_T1DUAL_InPhase', 'MR_T1DUAL_OutPhase', 'MR_T2SPIR', 'T1', 'STIR'],
+                        help='Target name. Please choose source and target in the same group (CT-MR or T1-STIR).')
     parser.add_argument('num_of_data')
 
     args = parser.parse_args()
     main(source_name=args.source_name, target_name=args.target_name, num_of_data=args.num_of_data)
-    #  za dużo kombinacji do rozważenia tutaj też
-    # # load pre-trained cifar10 source & target generators
-    # if args.cifar10_g_source:
-    #     g_source = load_model(args.cifar10_g_source)
-    #     if args.cifar10_g_target:
-    #         g_target = load_model(args.cifar10_g_target)
-    #         g_models = (g_source, g_target)
-    #         graycifar10_cross_colorcifar10(g_models)
-    # # load pre-trained mnist-svhn source & target generators
-    # elif args.mnist_svhn_g_source:
-    #     g_source = load_model(args.mnist_svhn_g_source)
-    #     if args.mnist_svhn_g_target:
-    #         g_target = load_model(args.mnist_svhn_g_target)
-    #         g_models = (g_source, g_target)
-    #         mnist_cross_svhn(g_models)
-    # train a cifar10 CycleGAN
-    # tu powinno być elif!!!
-    # if args.data_type == 'ct_mr':
-    #     print(gpu_device_name())
-    #     main(source_name=args.source_name, target_name=args.target_name)
-    # if args.data_type == 't1_stir':
-    #     print(gpu_device_name())
-    #     main(source_name=args.source_name, target_name=args.target_name)
-    # # train a mnist-svhn CycleGAN
-    # else:
-    #     mnist_cross_svhn()

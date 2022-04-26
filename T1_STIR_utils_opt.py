@@ -32,7 +32,7 @@ def get_data(dir, num_of_data):
                 all_source.append(img_array)
 
 
-                # save to folder (funkcja 2)
+                # save to folder
                 fig = plt.figure(frameon=False)
                 ax = plt.Axes(fig, [0., 0., 1., 1.])
                 ax.set_axis_off()
@@ -76,12 +76,10 @@ def create_hdf5_file(source_name, target_name, augmentation=False, num_of_data=1
     source_all = source_all.reshape(size, rows, cols, channels)
 
     # divide data into train and test sets
-    # source_data_old, test_source_data_old = train_test_split(source_all, test_size=0.14)
     threshold = len(source_all) // 7
     source_data = source_all[:-threshold]
     test_source_data = source_all[-threshold:]
 
-    # display_data(source_data, dataset_dir_dict[source_name], 'all_pyplot/')
 
     if augmentation:
         for i in range(len(source_data)):
@@ -105,12 +103,10 @@ def create_hdf5_file(source_name, target_name, augmentation=False, num_of_data=1
     target_all = target_all.reshape(size, rows, cols, channels)
 
     # divide data into train and test sets
-    # target_data, test_target_data = train_test_split(target_all, test_size=0.14)
     threshold = len(target_all) // 7
     target_data = target_all[:-threshold]
     test_target_data = target_all[-threshold:]
 
-    # display_data(target_data, dataset_dir_dict[target_name], 'all_pyplot/')
 
     if augmentation:
         for i in range(len(target_data)):
@@ -168,14 +164,3 @@ def readBinaryData(filename, size, layers, nbytes, BO='BE'):
                 data[j, k, i] = a
     file.close()
     return data
-
-
-
-
-# """Can't run in docker!"""
-# def create_hdf5_file_adata(source_name, target_name, augmentation=False, num_of_data=10000):
-#     create_hdf5_file(source_name, target_name, augmentation=augmentation, num_of_data=num_of_data, prefix_pendrive='/media/gosia/ADATA UFD/')
-#
-# """Can't run in docker!"""
-# def create_hdf5_file_red(source_name, target_name, num_of_data=10000):
-#     create_hdf5_file(source_name, target_name, num_of_data=num_of_data, prefix_pendrive='/media/gosia/DYSK USB/GOSIA/')
